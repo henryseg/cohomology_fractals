@@ -95,11 +95,18 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int entry_f
     return R13_normalise( init_pos + smallest_p * init_dir );
 }
 
-float ray_trace_to_a_point(vec4 pixel_pt, vec4 start_pt){
-    float dist_to_go = R13_dist(start_pt, pixel_pt);
-    vec4 diff = pixel_pt - start_pt;
-    vec4 init_dir = R13_normalise( (diff) + R13_dot(diff, start_pt) * start_pt );  // orthonormal decomp
-    vec4 init_pt = start_pt;
+vec4 get_ray_dir(vec2 resolution, vec2 fragCoord){ 
+    vec2 xy = 0.2*((fragCoord - 0.5*resolution)/resolution.x);
+    float z = 0.1/tan(radians(fov*0.5));
+    vec4 p =  R13_normalise(vec4(xy,-z,0.0));
+    return p;
+}
+
+float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go){
+    // float dist_to_go = R13_dist(start_pt, pixel_pt);
+    // vec4 diff = pixel_pt - start_pt;
+    // vec4 init_dir = R13_normalise( (diff) + R13_dot(diff, start_pt) * start_pt );  // orthonormal decomp
+    // vec4 init_pt = start_pt;
     int entry_face = -1;   /// starts off with no entry face
     int tet_num = 0;
     float total_face_weight = 0.0;
@@ -149,12 +156,22 @@ vec4 general_gradient(float t, float threshholds[5], vec3 colours[5]){
 #define PI 3.1415926535897932384626433832795;
 
 void main(){
-  vec2 p = vec2(2.0*gl_FragCoord.x/screenResolution.x - 1.0, (2.0*gl_FragCoord.y - screenResolution.y)/screenResolution.x);
+  // vec2 p = vec2(2.0*gl_FragCoord.x/screenResolution.x - 1.0, (2.0*gl_FragCoord.y - screenResolution.y)/screenResolution.x);
   /// square aspect ratio, [-1,1] x [-h,h]
   // p = 0.03*p; // + vec2(0.3,0.0);
-  vec4 pt = Klein_to_hyperboloid( 0.999999 * convert_R2_to_ball_model_R3(p) );
-  vec4 start_pt = vec4(1.1094003924504583, 0.41602514716892186, 0.24019223070763074, 0.0);
-  float weight = ray_trace_to_a_point(pt, start_pt);
+  // vec4 pt = Klein_to_hyperboloid( 0.999999 * convert_R2_to_ball_model_R3(p) );
+  // vec4 start_pt = vec4(1.1094003924504583, 0.41602514716892186, 0.24019223070763074, 0.0);
+  // float weight = ray_trace_to_a_point(pt, start_pt);
+  vec4 init_pt = vec4(0.0,0.0,0.0,1.0);
+  vec4 init_dir = get_ray_dir(screenResolution.xy, gl_FragCoord.xy);
+  
+  init_pt *= currentBoost;
+  init_dir *= currentBoost; 
+  /// and now, our own bigendian/littleendian horror
+  init_pt = vec4(init_pt.w, init_pt.xyz);
+  init_dir = vec4(init_dir.w, init_dir.xyz);
+
+  float weight = ray_trace(init_pt, init_dir, 7.5);
   weight = 0.5 + atan(0.3 * weight)/PI;  // between 0.0 and 1.0
   out_FragColor = general_gradient(weight, cool_threshholds, cool_colours);
   // out_FragColor = vec4(gl_FragCoord.x/screenResolution.x,0.0,0.0,1.0);
