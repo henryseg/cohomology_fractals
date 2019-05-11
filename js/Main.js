@@ -15,6 +15,35 @@ var g_screenShotResolution;
 var g_controllerBoosts = [];
 var g_controllerDualPoints = [];
 
+//
+
+
+var planes = [
+    new THREE.Vector4(0.8660254037844389, 0.8660254037844389, 0.4999999999999998, -0.8660254037844389), 
+    new THREE.Vector4(0.8660254037844387, 0.8660254037844387, 0.5, 0.8660254037844387), 
+    new THREE.Vector4(0.0, -0.8660254037844387, 0.5000000000000001, -0.0), 
+    new THREE.Vector4(0.0, -0.0, -1.0, -0.0),
+    new THREE.Vector4(0.8660254037844389, 0.8660254037844389, 0.4999999999999998, -0.8660254037844389), 
+    new THREE.Vector4(0.8660254037844387, 0.8660254037844387, 0.5, 0.8660254037844387), 
+    new THREE.Vector4(0.0, -0.8660254037844387, 0.5000000000000001, -0.0), 
+    new THREE.Vector4(0.0, -0.0, -1.0, -0.0)  
+    ]; 
+var other_tet_nums = [1,1,1,1,0,0,0,0];
+var entering_face_nums = [1,2,0,3,2,0,1,3];
+var weights = [0.5, 0.0, 0.5, 0.0, -0.5, -0.5, 0.0, 0.0];
+var SO13tsfms = [
+new THREE.Matrix4().set(2.5, -1.5000000000000002, -0.8660254037844385, 1.5, 1.5, -0.5000000000000001, -0.8660254037844385, 1.5, 0.8660254037844385, -0.8660254037844385, 0.5000000000000001, 0.8660254037844385, 1.5000000000000002, -1.5000000000000002, -0.8660254037844385, 0.5).transpose(),
+new THREE.Matrix4().set(1.4999999999999998, -0.49999999999999994, -0.8660254037844385, -0.4999999999999998, -0.5000000000000002, 1.0, 0.0, 0.5000000000000002, 0.8660254037844383, 0.0, -1.0, -0.8660254037844383, -0.49999999999999983, 0.49999999999999994, 0.8660254037844385, -0.5000000000000002).transpose(),
+new THREE.Matrix4().set(1.9999999999999996, 0.0, -1.7320508075688767, 0.0, 1.4999999999999993, 0.0, -1.7320508075688767, -0.4999999999999998, 0.8660254037844387, 0.0, -1.0, 0.8660254037844387, 0.0, -1.0, 0.0, 0.0).transpose(),
+new THREE.Matrix4().set(1.5, -1.0, 0.0, 0.5, 1.0, -1.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, -0.5, 1.0, 0.0, 0.5).transpose(),
+new THREE.Matrix4().set(1.9999999999999996, -1.4999999999999993, -0.8660254037844388, 0.0, 0.0, 0.0, 0.0, -1.0, 1.7320508075688767, -1.7320508075688767, -1.0, 0.0, 0.0, -0.4999999999999999, 0.8660254037844388, 0.0).transpose(),
+new THREE.Matrix4().set(2.5000000000000004, -1.5, -0.8660254037844389, -1.5000000000000007, 1.5000000000000007, -0.5000000000000001, -0.8660254037844388, -1.5000000000000007, 0.8660254037844388, -0.8660254037844388, 0.5000000000000001, -0.8660254037844388, -1.5000000000000002, 1.5, 0.8660254037844389, 0.5000000000000003).transpose(),
+new THREE.Matrix4().set(1.4999999999999998, 0.5000000000000002, -0.8660254037844383, 0.5000000000000001, 0.5000000000000001, 1.0, 0.0, 0.5000000000000001, 0.8660254037844386, 0.0, -1.0, 0.8660254037844386, 0.49999999999999967, 0.5000000000000002, -0.8660254037844383, -0.5000000000000001).transpose(),
+new THREE.Matrix4().set(1.5, -1.0, 0.0, 0.5, 1.0, -1.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, -0.5, 1.0, 0.0, 0.5).transpose()
+     ]; 
+
+console.log(SO13tsfms[0]);
+
 //-------------------------------------------------------
 // Scene Variables
 //-------------------------------------------------------
@@ -22,7 +51,7 @@ var scene;
 var renderer;
 var camera;
 // var maxSteps = 50;
-// var maxDist = 10.0;
+var maxDist = 7.5;
 var textFPS;
 var time;
 var stats;
@@ -104,7 +133,7 @@ var finishInit = function(fShader){
       // cellBoost:{type:"m4", value:g_cellBoost},
       // invCellBoost:{type:"m4", value:g_invCellBoost},
       // maxSteps:{type:"i", value:maxSteps},
-      // maxDist:{type:"f", value:maxDist},
+      maxDist:{type:"f", value:maxDist},
 			// lightPositions:{type:"v4v", value:lightPositions},
       // lightIntensities:{type:"v3v", value:lightIntensities},
       // attnModel:{type:"i", value:attnModel},
@@ -114,6 +143,11 @@ var finishInit = function(fShader){
       // tex:{type:"t", value: new THREE.TextureLoader().load("images/white.png")},   
       controllerCount:{type:"i", value: 0},
       controllerBoosts:{type:"m4", value:g_controllerBoosts},
+      planes:{type:"v4", value:planes},
+      other_tet_nums:{type:"i", value: other_tet_nums},
+      entering_face_nums:{type:"i", value: entering_face_nums},
+      weights:{type:"f", value: weights},
+      SO13tsfms:{type:"m4", value: SO13tsfms},
       // globalObjectBoost:{type:"m4v", value:globalObjectBoost},
       // globalObjectRadius:{type:"v3v", value:globalObjectRadius},
 			// halfCubeDualPoints:{type:"v4v", value:hCDP},
