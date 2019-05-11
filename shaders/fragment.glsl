@@ -14,12 +14,12 @@
     else {return acosh(bUV);}  
   } 
 
-  float R13_norm(vec4 v){
-    return sqrt(abs(R13_dot(v,v)));
+  float R13_norm_inv(vec4 v){
+    return inversesqrt(abs(R13_dot(v,v)));
   }
   
   vec4 R13_normalise(vec4 u){
-    return u/R13_norm(u);
+    return u*R13_norm_inv(u);
   }
   
   vec4 Klein_to_hyperboloid(vec3 v){
@@ -240,7 +240,9 @@ void main(){
   init_dir = vec4(init_dir.w, init_dir.xyz);
 
   float weight = ray_trace(init_pt, init_dir, 7.5);
-  weight = 0.5 + atan(0.3 * weight)/PI;  // between 0.0 and 1.0
+  weight = 0.3 * weight;
+  weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  //faster than atan, similar
+  // weight = 0.5 + atan(0.3 * weight)/PI;  // between 0.0 and 1.0
   out_FragColor = general_gradient(weight, cool_threshholds, cool_colours);
   // out_FragColor = vec4(gl_FragCoord.x/screenResolution.x,0.0,0.0,1.0);
   // out_FragColor = general_gradient(gl_FragCoord.x/screenResolution.x, cool_threshholds, cool_colours);
