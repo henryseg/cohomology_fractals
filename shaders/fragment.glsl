@@ -98,7 +98,7 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go){
       index = 4*tet_num + exit_face;
       total_face_weight += weights[ index ];
       entry_face = entering_face_nums[ index ];
-      tsfm = SO13tsfms[ index ];
+      tsfm = SO31tsfms[ index ];
       tet_num = other_tet_nums[ index ];
 
       new_dir = init_dir + R31_dot(init_dir, new_pt) * new_pt; // orthonormal decomp, no normalisation yet

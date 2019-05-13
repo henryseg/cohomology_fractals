@@ -34,7 +34,7 @@ uniform vec4 planes[8];
 uniform int other_tet_nums[8]; // = int[8](1,1,1,1,0,0,0,0);
 uniform int entering_face_nums[8]; // = int[8](1,2,0,3,2,0,1,3);
 uniform float weights[8]; // = float[8](0.5, 0.0, 0.5, 0.0, -0.5, -0.5, 0.0, 0.0);
-uniform mat4 SO13tsfms[8];
+uniform mat4 SO31tsfms[8];
 
 //--------------------------------------------
 //Lighting Variables & Global Object Variables

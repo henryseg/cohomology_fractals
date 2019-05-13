@@ -20,7 +20,7 @@ var planes;
 var other_tet_nums; 
 var entering_face_nums; 
 var weights; 
-var SO13tsfms; 
+var SO31tsfms; 
 
 //-------------------------------------------------------
 // Scene Variables
@@ -75,10 +75,10 @@ var init = function(){
         other_tet_nums = cannon_thurston_data[1];
         entering_face_nums = cannon_thurston_data[2];
         weights = cannon_thurston_data[3];
-        /// set up a for loop to build SO13tsfms array using array2mat4...
-        SO13tsfms = [];
+        /// set up a for loop to build SO31tsfms array using array2mat4...
+        SO31tsfms = [];
         for(i=0;i<cannon_thurston_data[4].length;i++){
-          SO13tsfms.push(array2matrix4(cannon_thurston_data[4][i]));
+          SO31tsfms.push(array2matrix4(cannon_thurston_data[4][i]));
         }
       }
     }
@@ -158,7 +158,7 @@ var finishInit = function(fShader){
       other_tet_nums:{type:"i", value: other_tet_nums},
       entering_face_nums:{type:"i", value: entering_face_nums},
       weights:{type:"f", value: weights},
-      SO13tsfms:{type:"m4", value: SO13tsfms},
+      SO31tsfms:{type:"m4", value: SO31tsfms},
       // globalObjectBoost:{type:"m4v", value:globalObjectBoost},
       // globalObjectRadius:{type:"v3v", value:globalObjectRadius},
 			// halfCubeDualPoints:{type:"v4v", value:hCDP},
