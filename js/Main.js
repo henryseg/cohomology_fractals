@@ -246,9 +246,10 @@ var animate = function(){
 //-------------------------------------------------------
 // Where the magic happens
 //-------------------------------------------------------
-if(mobileCheck()){
-  window.location.replace("http://www.michaelwoodard.net/hypVR-Ray_m/")
-}
-else{
-  init();
-}
+// if(mobileCheck()){
+//   window.location.replace("http://www.michaelwoodard.net/hypVR-Ray_m/")
+// }
+// else{
+//   init();
+// }
+init();
