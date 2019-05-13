@@ -140,10 +140,10 @@ THREE.VREffect = function ( renderer, done ) {
 		}
 
 		requestAnimationFrame(animate);
-		if (iconHidden) {
-			iconHidden = false;
-			document.getElementById("vr-icon").style.display = "block";
-		}
+		// if (iconHidden) {
+		// 	iconHidden = false;
+		// 	document.getElementById("vr-icon").style.display = "block";
+		// }
 
 		renderer.render.apply( this._renderer, [scene, camera]  );
 	};
