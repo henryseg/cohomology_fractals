@@ -27,7 +27,7 @@ uniform mat4 currentBoost;
 // uniform mat4 stereoBoosts[2];
 // uniform mat4 cellBoost; 
 // uniform mat4 invCellBoost;
-// uniform int maxSteps;
+uniform int maxSteps;
 uniform float maxDist;
 //
 uniform vec4 planes[8];

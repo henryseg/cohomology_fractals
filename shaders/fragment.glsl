@@ -90,7 +90,7 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go){
     int index;
     mat4 tsfm;
     vec4 new_dir;
-    for(int i=0; i<100; i++){
+    for(int i=0; i<maxSteps; i++){
       new_pt = ray_trace_through_hyperboloid_tet(init_pt, init_dir, tet_num, entry_face, exit_face);
       dist_moved = R31_dist(init_pt, new_pt);
       dist_to_go -= dist_moved;
