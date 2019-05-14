@@ -80,11 +80,10 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tet_num
     return R31_normalise( init_pos + smallest_p * init_dir );
 }
 
-float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go){
+float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tet_num){
     int entry_face = -1;   /// starts off with no entry face
-    int tet_num = 0;
+    int exit_face = -1;
     float total_face_weight = 0.0;
-    int exit_face = 0;
     vec4 new_pt;
     float dist_moved;
     int index;
@@ -132,7 +131,7 @@ void main(){
   init_pt *= currentBoost;
   init_dir *= currentBoost; 
 
-  float weight = ray_trace(init_pt, init_dir, maxDist);
+  float weight = ray_trace(init_pt, init_dir, maxDist, tet_num);
   weight = 0.3 * weight;
   weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  //faster than atan, similar
   // weight = 0.5 + atan(0.3 * weight)/PI;  // between 0.0 and 1.0

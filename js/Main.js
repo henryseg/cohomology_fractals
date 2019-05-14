@@ -7,6 +7,7 @@ var g_controls;
 var g_geometry;
 var g_rotation;
 var g_currentBoost;
+var tet_num = 0;
 var g_stereoBoosts = [];
 // var g_cellBoost;
 // var g_invCellBoost;
@@ -140,6 +141,7 @@ var finishInit = function(fShader){
       fov:{type:"f", value:90},
       // invGenerators:{type:"m4v", value:invGens},
       currentBoost:{type:"m4", value:g_currentBoost},
+      tet_num:{type:"i", value:tet_num},
       // stereoBoosts:{type:"m4v", value:g_stereoBoosts},
       // cellBoost:{type:"m4", value:g_cellBoost},
       // invCellBoost:{type:"m4", value:g_invCellBoost},

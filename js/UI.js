@@ -6,7 +6,7 @@ var g_cut4 = 2;
 var g_tubeRad = 0.15;
 var g_cellPosition = new THREE.Vector4(0, 0, 0, 1);
 var g_cellSurfaceOffset = 0.996216;
-var g_vertexPosition = idealCubeCornerKlein;
+// var g_vertexPosition = idealCubeCornerKlein;
 var g_vertexSurfaceOffset = -0.951621;
 var g_targetFPS = {value:27.5};
 
@@ -127,40 +127,40 @@ function updateUniformsFromUI()
   var midEdge = constructPointInGeometry( g_geometry, midEdgeDir, g_cellSurfaceOffset );
 
   // Vertex location and sphere size.
-  g_vertexPosition = new THREE.Vector4( hCWK, hCWK, hCWK, 1.0 ); 
-  if( g_geometry != Geometry.Euclidean )
-    g_vertexPosition.geometryNormalize( g_geometry );
+  // g_vertexPosition = new THREE.Vector4( hCWK, hCWK, hCWK, 1.0 ); 
+  // if( g_geometry != Geometry.Euclidean )
+  //   g_vertexPosition.geometryNormalize( g_geometry );
 
-  switch( g_cut4 )
-  {
-  case Geometry.Spherical:
-    var distToMidEdge = midEdge.geometryDistance(g_geometry, g_vertexPosition);
-    g_vertexSurfaceOffset = distToMidEdge;
-    break;
+  // switch( g_cut4 )
+  // {
+  // case Geometry.Spherical:
+  //   var distToMidEdge = midEdge.geometryDistance(g_geometry, g_vertexPosition);
+  //   g_vertexSurfaceOffset = distToMidEdge;
+  //   break;
 
-  case Geometry.Euclidean:
-    var distToMidEdge = horosphereHSDF(midEdge, idealCubeCornerKlein, -g_cellSurfaceOffset);
-    g_vertexPosition = idealCubeCornerKlein;
-    g_vertexSurfaceOffset = -(g_cellSurfaceOffset - distToMidEdge);
-    break;
+  // case Geometry.Euclidean:
+  //   var distToMidEdge = horosphereHSDF(midEdge, idealCubeCornerKlein, -g_cellSurfaceOffset);
+  //   g_vertexPosition = idealCubeCornerKlein;
+  //   g_vertexSurfaceOffset = -(g_cellSurfaceOffset - distToMidEdge);
+  //   break;
 
-  case Geometry.Hyperbolic:
-    g_vertexSurfaceOffset = geodesicPlaneHSDF(midEdge, g_vertexPosition, 0);
-    break;
-  }
+  // case Geometry.Hyperbolic:
+  //   g_vertexSurfaceOffset = geodesicPlaneHSDF(midEdge, g_vertexPosition, 0);
+  //   break;
+  // }
   
-  if( isCubical ) {
-    g_targetFPS.value = 27.5;
-    maxSteps = 31;
-  }
-  else {
-    g_vertexSurfaceOffset = 0;
-    g_cut4 = -1;
+  // if( isCubical ) {
+  //   g_targetFPS.value = 27.5;
+  //   maxSteps = 31;
+  // }
+  // else {
+  //   g_vertexSurfaceOffset = 0;
+  //   g_cut4 = -1;
 
     // Simplex drawing is more expensive, so let's live with a lower frame rate.
-    g_targetFPS.value = 17.0;
-    maxSteps = 55;
-  }
+  //   g_targetFPS.value = 17.0;
+  //   maxSteps = 55;
+  // }
 
   // Higher than this value for hyperbolic we run into floating point errors
   var maxDist = 10.0;

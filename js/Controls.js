@@ -126,7 +126,7 @@ THREE.Controls = function(done){
             g_currentBoost.premultiply(m);
         }
 
-        // g_currentBoost.gramSchmidt(g_geometry);
+        g_currentBoost.gramSchmidt(g_geometry);
     };
 
     this.zeroSensor = function(){
