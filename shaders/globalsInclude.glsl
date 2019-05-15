@@ -23,7 +23,7 @@ out vec4 out_FragColor;
 uniform vec2 screenResolution;
 uniform float fov;
 
-uniform int tet_num;
+uniform int tetNum;
 uniform mat4 currentBoost;
 // uniform mat4 stereoBoosts[2];
 // uniform mat4 cellBoost; 
@@ -31,11 +31,11 @@ uniform mat4 currentBoost;
 uniform int maxSteps;
 uniform float maxDist;
 //
-uniform vec4 planes[24];
-uniform int other_tet_nums[24]; // = int[8](1,1,1,1,0,0,0,0);
-uniform int entering_face_nums[24]; // = int[8](1,2,0,3,2,0,1,3);
-uniform float weights[24]; // = float[8](0.5, 0.0, 0.5, 0.0, -0.5, -0.5, 0.0, 0.0);
-uniform mat4 SO31tsfms[24];
+uniform vec4 planes[8];
+uniform int otherTetNums[8]; // = int[8](1,1,1,1,0,0,0,0);
+uniform int entering_face_nums[8]; // = int[8](1,2,0,3,2,0,1,3);
+uniform float weights[8]; // = float[8](0.5, 0.0, 0.5, 0.0, -0.5, -0.5, 0.0, 0.0);
+uniform mat4 SO31tsfms[8];
 
 //--------------------------------------------
 //Lighting Variables & Global Object Variables

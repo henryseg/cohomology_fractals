@@ -9,6 +9,7 @@ var g_rotation;
 var g_currentBoost;
 var g_last_pos = new THREE.Vector4(0.0,0.0,0.0,1.0);
 var g_tet_num = 0;
+var g_tet_num_v = new THREE.Vector4(0.0,0.0,0.0,0.0);
 var g_stereoBoosts = [];
 // var g_cellBoost;
 // var g_invCellBoost;
@@ -53,31 +54,6 @@ function array2matrix4(M){
   return new THREE.Matrix4().fromArray(M);
 }
 
-// testing
-
-// foo = new THREE.Matrix4().set( 0,1,0,0,
-//                               -1,0,0,0,
-//                                0,0,1,0,
-//                                0,0,0,1);
-// foo.transpose();
-// bar = new THREE.Vector4(1,2,3,4);
-// bar.applyMatrix4(foo);  // apply acts with matrix on the left
-// console.log(bar);
-
-// // que = new THREE.Matrix4().set( 1,2,3,4,
-// //                                0,0,0,0,
-// //                                0,0,0,0,
-// //                                0,0,0,0);
-// // que.premultiply(foo);
-
-
-// // foo.transpose();
-// // console.log(foo);
-// // que.transpose();
-// // console.log(que);
-// debugger;
-
-
 //-------------------------------------------------------
 // Sets up the scene
 //-------------------------------------------------------
@@ -87,8 +63,8 @@ var init = function(){
   }
   else{
     var request = new XMLHttpRequest(); /// get triangulation data, code from https://stackoverflow.com/questions/16991341/json-parse-file-path
-    // request.open("GET", "data/cannon_thurston_data.json", true);
-    request.open("GET", "data/cannon_thurston_data_2.json", true);
+    request.open("GET", "data/cannon_thurston_data.json", true);
+    // request.open("GET", "data/cannon_thurston_data_2.json", true);
     request.send(null);
     request.onreadystatechange = function() {
       if ( request.readyState === 4 && request.status === 200 ) {
@@ -168,7 +144,7 @@ var finishInit = function(fShader){
       fov:{type:"f", value:90},
       // invGenerators:{type:"m4v", value:invGens},
       currentBoost:{type:"m4", value:g_currentBoost},
-      tet_num:{type:"i", value:g_tet_num},
+      tetNum:{type:"i", value:0},
       // stereoBoosts:{type:"m4v", value:g_stereoBoosts},
       // cellBoost:{type:"m4", value:g_cellBoost},
       // invCellBoost:{type:"m4", value:g_invCellBoost},
@@ -184,7 +160,7 @@ var finishInit = function(fShader){
       controllerCount:{type:"i", value: 0},
       controllerBoosts:{type:"m4", value:g_controllerBoosts},
       planes:{type:"v4", value:planes},
-      other_tet_nums:{type:"i", value: other_tet_nums},
+      otherTetNums:{type:"i", value: other_tet_nums},
       entering_face_nums:{type:"i", value: entering_face_nums},
       weights:{type:"f", value: weights},
       SO31tsfms:{type:"m4", value: SO31tsfms},
@@ -246,7 +222,7 @@ var animate = function(){
   
   //console.log(g_currentBoost.elements);
   // console.log(g_tet_num);
-
+  g_tet_num_v.x = g_tet_num;
   g_effect.render(scene, camera, animate);
   stats.end();
 }

@@ -57,12 +57,12 @@ vec4 get_ray_dir(vec2 resolution, vec2 fragCoord){
     return p;
 }
 
-vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tet_num, int entry_face, out int exit_face){
+vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum, int entry_face, out int exit_face){
     ///Given shape of a tet and a ray, find where the ray exits and through which face
     float smallest_p = 100000000.0;
     for(int face=0; face<4; face++){
         if(face != entry_face){  // find p when we hit that face
-            int index = 4*tet_num + face;
+            int index = 4*tetNum + face;
             if(R31_dot(init_dir, planes[index]) > 0.0){ 
                 float p = param_to_isect_line_with_plane(init_pos, init_dir, planes[index]);
                 if ((-0.00000001 <= p) && (p < smallest_p)) {
@@ -79,7 +79,7 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tet_num
     return R31_normalise( init_pos + smallest_p * init_dir );
 }
 
-float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tet_num){
+float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
     int entry_face = -1;   /// starts off with no entry face
     int exit_face = -1;
     float total_face_weight = 0.0;
@@ -89,15 +89,15 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tet_num){
     mat4 tsfm;
     vec4 new_dir;
     for(int i=0; i<maxSteps; i++){
-      new_pt = ray_trace_through_hyperboloid_tet(init_pt, init_dir, tet_num, entry_face, exit_face);
+      new_pt = ray_trace_through_hyperboloid_tet(init_pt, init_dir, tetNum, entry_face, exit_face);
       dist_moved = hyp_dist(init_pt, new_pt);
       dist_to_go -= dist_moved;
       if (dist_to_go <= 0.0){ break; }
-      index = 4*tet_num + exit_face;
+      index = 4*tetNum + exit_face;
       total_face_weight += weights[ index ];
       entry_face = entering_face_nums[ index ];
       tsfm = SO31tsfms[ index ];
-      tet_num = other_tet_nums[ index ];
+      tetNum = otherTetNums[ index ];
 
       new_dir = init_dir + R31_dot(init_dir, new_pt) * new_pt; // orthonormal decomp, no normalisation yet
       init_pt = new_pt * tsfm;  
@@ -130,10 +130,10 @@ void main(){
   init_pt *= currentBoost;
   init_dir *= currentBoost; 
 
-  float weight = ray_trace(init_pt, init_dir, maxDist, tet_num);
+  float weight = ray_trace(init_pt, init_dir, maxDist, tetNum);
   weight = 0.3 * weight;
-
-  // float weight = tet_num; //float(tet_num);
+  
+  // float weight = tetNum;
   weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  //faster than atan, similar
   // weight = 0.5 + atan(0.3 * weight)/PI;  // between 0.0 and 1.0
   out_FragColor = general_gradient(weight, cool_threshholds, cool_colours);

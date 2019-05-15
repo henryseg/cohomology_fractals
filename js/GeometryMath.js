@@ -173,6 +173,7 @@ function fixOutsideTetrahedron() {
       entry_face = entering_face_nums[ index ];
       var tsfm = SO31tsfms[ index ];
       g_tet_num = other_tet_nums[ index ];
+      g_material.uniforms.tetNum.value = g_tet_num;
       // could also modify global weight here as well
       // tsfm.transpose();
       
@@ -181,7 +182,7 @@ function fixOutsideTetrahedron() {
       // tsfm.transpose();
       
       init_pos = exit_pos;
-      
+      console.log(g_tet_num);
       // debugger;
   }
   g_last_pos = get_pos();
