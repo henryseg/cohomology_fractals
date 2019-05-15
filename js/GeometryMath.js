@@ -155,37 +155,30 @@ function ray_trace_through_hyperboloid_tet(init_pos, init_dir, entry_face){
 
 function fixOutsideTetrahedron() {
   var init_pos = g_last_pos;
-  // console.log(init_pos);
-  var init_dir = new THREE.Vector4(); 
+  var init_dir = get_pos()
+  init_dir.sub(init_pos).R31_normalise(); // from init_pos to pos
   var entry_face = -1;
-  if (isOutsideTetrahedron(get_pos())){
+  while (isOutsideTetrahedron(get_pos())){
       // find which face the straight line from last position to here goes through, move g_currentBoost 
       // appropriately, check again that we are inside, remember our entry face into the last tet so we don't 
       // go backwards.
-      init_dir = get_pos();
-      (init_dir.sub(init_pos)).R31_normalise(); // from init_pos to pos
-      
       var out = ray_trace_through_hyperboloid_tet(init_pos, init_dir, entry_face);
-      // console.log(out);
       var exit_pos = out[0];
       var exit_face = out[1];
       var index = 4*g_tet_num + exit_face;
       entry_face = entering_face_nums[ index ];
       var tsfm = SO31tsfms[ index ];
+      console.log(exit_face);  // can crash on this being -1...
       g_tet_num = other_tet_nums[ index ];
       g_material.uniforms.tetNum.value = g_tet_num;
       g_currentWeight += weights[ index ];
       g_material.uniforms.currentWeight.value = g_currentWeight;
-      // could also modify global weight here as well
-      // tsfm.transpose();
-      
-      g_currentBoost.multiply(tsfm); //?
-      exit_pos.applyMatrix4(tsfm); //?
-      // tsfm.transpose();
-      
+      g_currentBoost.multiply(tsfm);
+
+      init_dir.addScaledVector( exit_pos, init_dir.R31_dot(exit_pos)).applyMatrix4(tsfm).R31_normalise();
+      exit_pos.applyMatrix4(tsfm); 
       init_pos = exit_pos;
       console.log(g_tet_num);
-      // debugger;
   }
   g_last_pos = get_pos();
 }
