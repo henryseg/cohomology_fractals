@@ -8,7 +8,7 @@
     return u.x*v.x + u.y*v.y + u.z*v.z - u.w*v.w; // Lorentz Dot
   }
 
-  float R31_dist(vec4 u, vec4 v){
+  float hyp_dist(vec4 u, vec4 v){
     float bUV = -R31_dot(u,v);
     if (bUV < 1.0) {return 0.0;}
     else {return acosh(bUV);}  
@@ -60,7 +60,6 @@ vec4 get_ray_dir(vec2 resolution, vec2 fragCoord){
 vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tet_num, int entry_face, out int exit_face){
     ///Given shape of a tet and a ray, find where the ray exits and through which face
     float smallest_p = 100000000.0;
-    exit_face = 1000;
     for(int face=0; face<4; face++){
         if(face != entry_face){  // find p when we hit that face
             int index = 4*tet_num + face;
@@ -91,7 +90,7 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tet_num){
     vec4 new_dir;
     for(int i=0; i<maxSteps; i++){
       new_pt = ray_trace_through_hyperboloid_tet(init_pt, init_dir, tet_num, entry_face, exit_face);
-      dist_moved = R31_dist(init_pt, new_pt);
+      dist_moved = hyp_dist(init_pt, new_pt);
       dist_to_go -= dist_moved;
       if (dist_to_go <= 0.0){ break; }
       index = 4*tet_num + exit_face;
@@ -133,6 +132,8 @@ void main(){
 
   float weight = ray_trace(init_pt, init_dir, maxDist, tet_num);
   weight = 0.3 * weight;
+
+  // float weight = tet_num; //float(tet_num);
   weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  //faster than atan, similar
   // weight = 0.5 + atan(0.3 * weight)/PI;  // between 0.0 and 1.0
   out_FragColor = general_gradient(weight, cool_threshholds, cool_colours);

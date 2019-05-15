@@ -3,12 +3,22 @@
 //	Dot Product
 //----------------------------------------------------------------------
 
-THREE.Vector4.prototype.lorentzDot = function(v){
+THREE.Vector4.prototype.R31_dot = function(v){
 	return this.x * v.x + this.y * v.y + this.z * v.z - this.w * v.w;
 }
 
-THREE.Vector4.prototype.hypLength = function(){
-    return Math.sqrt(Math.abs(this.lorentzDot(this)));
+THREE.Vector4.prototype.hyp_dist = function(v){
+  var bUV = -this.R31_dot(v);
+  if(bUV < 1.0) {return 0.0;}
+  else{ return Math.acosh(bUV);}
+}
+
+THREE.Vector4.prototype.R31_norm = function(){
+    return Math.sqrt(Math.abs(this.R31_dot(this)));
+}
+
+THREE.Vector4.prototype.R31_normalise = function(){
+    this.multiplyScalar(1.0/this.R31_norm());
 }
 
 //----------------------------------------------------------------------
@@ -34,12 +44,12 @@ THREE.Matrix4.prototype.gramSchmidt = function(){
   var temp = new THREE.Vector4();
   var temp2 = new THREE.Vector4();
   for (var i = 0; i<4; i++) {  ///normalize row
-    var invRowNorm = 1.0 / temp.fromArray(n.slice(4*i, 4*i+4)).hypLength();
+    var invRowNorm = 1.0 / temp.fromArray(n.slice(4*i, 4*i+4)).R31_norm();
     for (var l = 0; l<4; l++) {
       n[4*i + l] = n[4*i + l] * invRowNorm;
     }
     for (var j = i+1; j<4; j++) { // subtract component of ith vector from later vectors
-      var component = temp.fromArray(n.slice(4*i, 4*i+4)).lorentzDot(temp2.fromArray(n.slice(4*j, 4*j+4)));
+      var component = temp.fromArray(n.slice(4*i, 4*i+4)).R31_dot(temp2.fromArray(n.slice(4*j, 4*j+4)));
       for (var l = 0; l<4; l++) {
         n[4*j + l] -= component * n[4*i + l];
       }
@@ -90,3 +100,89 @@ function translateByVector(v) { // trickery stolen from Jeff Weeks' Curved Space
   return result;
 }
 
+//----------------------------------------------------------------------
+//  Deal with moving through tetrahedra
+//----------------------------------------------------------------------
+
+function get_pos() {
+  var temp = new THREE.Matrix4().copy(g_currentBoost);
+  temp.transpose(); /// THREE.js stores matrices transposed...
+  return new THREE.Vector4().fromArray(temp.elements.slice(12, 16)); // last row is position
+}
+
+function isOutsideTetrahedron(v) {
+  for(var i = 0; i < 4; i++){
+    if( v.R31_dot( planes[4*g_tet_num + i] ) > 0.0 ){
+      return true;
+    }
+  }
+  return false; 
+}
+
+function param_to_isect_line_with_plane(line_start, line_dir, plane){
+    var denom = plane.R31_dot(line_dir);
+    if(denom == 0.0){ return 200000000.0; }  // bigger than the initial smallest_p value we will accept
+    /// solve: R31_dot(plane, line_start + p * line_dir) = 0
+    ///        R31_dot(plane, line_start) + p * R31_dot(plane, line_dir) = 0
+    return (-plane.R31_dot(line_start)) / denom;
+  }
+
+function ray_trace_through_hyperboloid_tet(init_pos, init_dir, entry_face){
+    ///Given shape of a tet and a ray, find where the ray exits and through which face
+    var smallest_p = 100000000.0;
+    var exit_face = -1;
+    for(var face=0; face<4; face++){
+        if(face != entry_face){  // find p when we hit that face
+            var index = 4*g_tet_num + face;
+            if(init_dir.R31_dot( planes[index] ) > 0.0){ 
+                var p = param_to_isect_line_with_plane(init_pos, init_dir, planes[index]);
+                if ((-0.00000001 <= p) && (p < smallest_p)) {
+                    /// if we are on an edge then we don't in fact move as we go through this tet: t = 0.0
+                    /// also allow tiny negative values, which will come up from floating point errors. 
+                    /// surface normals check should ensure that even in this case we make progress through 
+                    /// the triangles around an edge
+                    smallest_p = p;
+                    exit_face = face;
+                }
+            }
+        }
+    }
+    // console.log([init_pos, init_dir, smallest_p]);
+    init_pos.addScaledVector( init_dir, smallest_p ).R31_normalise(); // end_pos
+    // console.log(init_pos);
+    return [  init_pos, exit_face ];  
+}
+
+function fixOutsideTetrahedron() {
+  var init_pos = g_last_pos;
+  // console.log(init_pos);
+  var init_dir = new THREE.Vector4(); 
+  var entry_face = -1;
+  if (isOutsideTetrahedron(get_pos())){
+      // find which face the straight line from last position to here goes through, move g_currentBoost 
+      // appropriately, check again that we are inside, remember our entry face into the last tet so we don't 
+      // go backwards.
+      init_dir = get_pos();
+      (init_dir.sub(init_pos)).R31_normalise(); // from init_pos to pos
+      
+      var out = ray_trace_through_hyperboloid_tet(init_pos, init_dir, entry_face);
+      // console.log(out);
+      var exit_pos = out[0];
+      var exit_face = out[1];
+      var index = 4*g_tet_num + exit_face;
+      entry_face = entering_face_nums[ index ];
+      var tsfm = SO31tsfms[ index ];
+      g_tet_num = other_tet_nums[ index ];
+      // could also modify global weight here as well
+      // tsfm.transpose();
+      
+      g_currentBoost.multiply(tsfm); //?
+      exit_pos.applyMatrix4(tsfm); //?
+      // tsfm.transpose();
+      
+      init_pos = exit_pos;
+      
+      // debugger;
+  }
+  g_last_pos = get_pos();
+}

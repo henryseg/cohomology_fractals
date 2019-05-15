@@ -106,12 +106,17 @@ THREE.Controls = function(done){
            // g_invCellBoost.getInverse(g_cellBoost);
         // }
 
+
+        // fix things if we are outside of our tetrahedron...
+       
+        fixOutsideTetrahedron();
+
         //--------------------------------------------------------------------
         // Rotation
         //--------------------------------------------------------------------
         var deltaRotation = new THREE.Quaternion(this.manualRotateRate[0] * speed * deltaTime,
-                                                    this.manualRotateRate[1] * speed * deltaTime,
-                                                    this.manualRotateRate[2] * speed * deltaTime, 1.0);
+                                                 this.manualRotateRate[1] * speed * deltaTime,
+                                                 this.manualRotateRate[2] * speed * deltaTime, 1.0);
         deltaRotation.normalize();
         if(deltaRotation !== undefined){
             g_rotation.multiply(deltaRotation);
