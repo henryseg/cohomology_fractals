@@ -130,7 +130,7 @@ void main(){
   init_pt *= currentBoost;
   init_dir *= currentBoost; 
 
-  float weight = ray_trace(init_pt, init_dir, maxDist, tetNum);
+  float weight = currentWeight + ray_trace(init_pt, init_dir, maxDist, tetNum);
   weight = 0.3 * weight;
   
   // float weight = tetNum;

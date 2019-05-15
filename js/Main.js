@@ -9,7 +9,7 @@ var g_rotation;
 var g_currentBoost;
 var g_last_pos = new THREE.Vector4(0.0,0.0,0.0,1.0);
 var g_tet_num = 0;
-var g_tet_num_v = new THREE.Vector4(0.0,0.0,0.0,0.0);
+var g_currentWeight = 0.0;
 var g_stereoBoosts = [];
 // var g_cellBoost;
 // var g_invCellBoost;
@@ -145,6 +145,7 @@ var finishInit = function(fShader){
       // invGenerators:{type:"m4v", value:invGens},
       currentBoost:{type:"m4", value:g_currentBoost},
       tetNum:{type:"i", value:0},
+      currentWeight:{type:"f", value:0.0},
       // stereoBoosts:{type:"m4v", value:g_stereoBoosts},
       // cellBoost:{type:"m4", value:g_cellBoost},
       // invCellBoost:{type:"m4", value:g_invCellBoost},
@@ -222,7 +223,6 @@ var animate = function(){
   
   //console.log(g_currentBoost.elements);
   // console.log(g_tet_num);
-  g_tet_num_v.x = g_tet_num;
   g_effect.render(scene, camera, animate);
   stats.end();
 }

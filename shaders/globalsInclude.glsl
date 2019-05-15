@@ -25,6 +25,7 @@ uniform float fov;
 
 uniform int tetNum;
 uniform mat4 currentBoost;
+uniform float currentWeight;
 // uniform mat4 stereoBoosts[2];
 // uniform mat4 cellBoost; 
 // uniform mat4 invCellBoost;
