@@ -112,7 +112,7 @@ function get_pos() {
 
 function isOutsideTetrahedron(v) {
   for(var i = 0; i < 4; i++){
-    if( v.R31_dot( planes[4*g_tet_num + i] ) > 0.0 ){
+    if( v.R31_dot( planes[4*g_tet_num + i] ) > 0.0000001 ){
       return true;
     }
   }
@@ -136,7 +136,7 @@ function ray_trace_through_hyperboloid_tet(init_pos, init_dir, entry_face){
             var index = 4*g_tet_num + face;
             if(init_dir.R31_dot( planes[index] ) > 0.0){ 
                 var p = param_to_isect_line_with_plane(init_pos, init_dir, planes[index]);
-                if ((-0.00000001 <= p) && (p < smallest_p)) {
+                if ((-0.00001 <= p) && (p < smallest_p)) {
                     /// if we are on an edge then we don't in fact move as we go through this tet: t = 0.0
                     /// also allow tiny negative values, which will come up from floating point errors. 
                     /// surface normals check should ensure that even in this case we make progress through 
@@ -167,8 +167,9 @@ function fixOutsideTetrahedron() {
       var exit_face = out[1];
       var index = 4*g_tet_num + exit_face;
       entry_face = entering_face_nums[ index ];
+      console.log(['exiting tet', g_tet_num]);
+      console.log(['exit face', exit_face]);  // can crash on this being -1...
       var tsfm = SO31tsfms[ index ];
-      console.log(exit_face);  // can crash on this being -1...
       g_tet_num = other_tet_nums[ index ];
       g_material.uniforms.tetNum.value = g_tet_num;
       g_currentWeight += weights[ index ];
@@ -176,9 +177,14 @@ function fixOutsideTetrahedron() {
       g_currentBoost.multiply(tsfm);
 
       init_dir.addScaledVector( exit_pos, init_dir.R31_dot(exit_pos)).applyMatrix4(tsfm).R31_normalise();
+      tsfm.transpose();
       exit_pos.applyMatrix4(tsfm); 
+      tsfm.transpose();
       init_pos = exit_pos;
-      console.log(g_tet_num);
+      console.log(['entering tet', g_tet_num]);
+      console.log(['entry face', entry_face]);
+      console.log(['isOutsideTetrahedron(exit_pos)', isOutsideTetrahedron(exit_pos)]);
+      console.log(['isOutsideTetrahedron(get_pos())', isOutsideTetrahedron(get_pos())]);
   }
   g_last_pos = get_pos();
 }

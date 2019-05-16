@@ -65,7 +65,11 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum,
             int index = 4*tetNum + face;
             if(R31_dot(init_dir, planes[index]) > 0.0){ 
                 float p = param_to_isect_line_with_plane(init_pos, init_dir, planes[index]);
-                if ((-0.00000001 <= p) && (p < smallest_p)) {
+                // if ((-10000.0 <= p) && (p < smallest_p)) {
+                if (p < smallest_p) {  
+                    /// negative values are ok if we have to go backwards a little to get through the face we are a little the wrong side of
+                    /// Although this can apparently get caught in infinite loops in an edge
+
                     /// if we are on an edge then we don't in fact move as we go through this tet: t = 0.0
                     /// also allow tiny negative values, which will come up from floating point errors. 
                     /// surface normals check should ensure that even in this case we make progress through 
