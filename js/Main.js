@@ -24,6 +24,7 @@ var other_tet_nums;
 var entering_face_nums; 
 var weights; 
 var SO31tsfms; 
+var tet_vertices;
 
 //-------------------------------------------------------
 // Scene Variables
@@ -63,8 +64,8 @@ var init = function(){
   }
   else{
     var request = new XMLHttpRequest(); /// get triangulation data, code from https://stackoverflow.com/questions/16991341/json-parse-file-path
-    request.open("GET", "data/cannon_thurston_data.json", true);
-    // request.open("GET", "data/cannon_thurston_data_2.json", true);
+    // request.open("GET", "data/cannon_thurston_data.json", true);
+    request.open("GET", "data/cannon_thurston_data_2.json", true);
     request.send(null);
     request.onreadystatechange = function() {
       if ( request.readyState === 4 && request.status === 200 ) {
@@ -84,9 +85,12 @@ var init = function(){
         for(i=0;i<cannon_thurston_data[4].length;i++){
           SO31tsfms.push(array2matrix4(cannon_thurston_data[4][i]));
         }
+        tet_vertices = [];
+        for(i=0;i<cannon_thurston_data[5].length;i++){
+          tet_vertices.push(array2vector4(cannon_thurston_data[5][i]));
+        }
       }
     }
-    
     
     //Setup our THREE scene--------------------------------
 	  time = Date.now();

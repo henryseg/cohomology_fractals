@@ -110,65 +110,35 @@ function get_pos() {
   return new THREE.Vector4().fromArray(temp.elements.slice(12, 16)); // last row is position
 }
 
-function isOutsideTetrahedron(v) {
+function amountOutsideTetrahedron(v) {
+  var biggest_amount = -100000.0;
+  var biggest_face;
+  var amount;
   for(var i = 0; i < 4; i++){
-    if( v.R31_dot( planes[4*g_tet_num + i] ) > 0.0000001 ){
-      return true;
+    amount = v.R31_dot( planes[4*g_tet_num + i] );
+    if( amount > biggest_amount ){
+      biggest_amount = amount;
+      biggest_face = i;
     }
   }
-  return false; 
-}
-
-function param_to_isect_line_with_plane(line_start, line_dir, plane){
-    var denom = plane.R31_dot(line_dir);
-    if(denom == 0.0){ return 200000000.0; }  // bigger than the initial smallest_p value we will accept
-    /// solve: R31_dot(plane, line_start + p * line_dir) = 0
-    ///        R31_dot(plane, line_start) + p * R31_dot(plane, line_dir) = 0
-    return (-plane.R31_dot(line_start)) / denom;
-  }
-
-function ray_trace_through_hyperboloid_tet(init_pos, init_dir, entry_face){
-    ///Given shape of a tet and a ray, find where the ray exits and through which face
-    var smallest_p = 100000000.0;
-    var exit_face = -1;
-    for(var face=0; face<4; face++){
-        if(face != entry_face){  // find p when we hit that face
-            var index = 4*g_tet_num + face;
-            if(init_dir.R31_dot( planes[index] ) > 0.0){ 
-                var p = param_to_isect_line_with_plane(init_pos, init_dir, planes[index]);
-                if ((-0.00001 <= p) && (p < smallest_p)) {
-                    /// if we are on an edge then we don't in fact move as we go through this tet: t = 0.0
-                    /// also allow tiny negative values, which will come up from floating point errors. 
-                    /// surface normals check should ensure that even in this case we make progress through 
-                    /// the triangles around an edge
-                    smallest_p = p;
-                    exit_face = face;
-                }
-            }
-        }
-    }
-    // console.log([init_pos, init_dir, smallest_p]);
-    init_pos.addScaledVector( init_dir, smallest_p ).R31_normalise(); // end_pos
-    // console.log(init_pos);
-    return [  init_pos, exit_face ];  
+  return [biggest_amount, biggest_face]; 
 }
 
 function fixOutsideTetrahedron() {
-  var init_pos = g_last_pos;
-  var init_dir = get_pos()
-  init_dir.sub(init_pos).R31_normalise(); // from init_pos to pos
+
   var entry_face = -1;
-  while (isOutsideTetrahedron(get_pos())){
+  var out = amountOutsideTetrahedron(get_pos());
+  var amount_outside = out[0];
+  var biggest_face = out[1];
+  while ( amount_outside > 0.000001 && biggest_face != entry_face ){
       // find which face the straight line from last position to here goes through, move g_currentBoost 
       // appropriately, check again that we are inside, remember our entry face into the last tet so we don't 
       // go backwards.
-      var out = ray_trace_through_hyperboloid_tet(init_pos, init_dir, entry_face);
-      var exit_pos = out[0];
-      var exit_face = out[1];
-      var index = 4*g_tet_num + exit_face;
+
+      var index = 4*g_tet_num + biggest_face;
       entry_face = entering_face_nums[ index ];
-      console.log(['exiting tet', g_tet_num]);
-      console.log(['exit face', exit_face]);  // can crash on this being -1...
+      // console.log(['exiting tet', g_tet_num]);
+      // console.log(['exit face', biggest_face]);  
       var tsfm = SO31tsfms[ index ];
       g_tet_num = other_tet_nums[ index ];
       g_material.uniforms.tetNum.value = g_tet_num;
@@ -176,15 +146,93 @@ function fixOutsideTetrahedron() {
       g_material.uniforms.currentWeight.value = g_currentWeight;
       g_currentBoost.multiply(tsfm);
 
-      init_dir.addScaledVector( exit_pos, init_dir.R31_dot(exit_pos)).applyMatrix4(tsfm).R31_normalise();
-      tsfm.transpose();
-      exit_pos.applyMatrix4(tsfm); 
-      tsfm.transpose();
-      init_pos = exit_pos;
-      console.log(['entering tet', g_tet_num]);
-      console.log(['entry face', entry_face]);
-      console.log(['isOutsideTetrahedron(exit_pos)', isOutsideTetrahedron(exit_pos)]);
-      console.log(['isOutsideTetrahedron(get_pos())', isOutsideTetrahedron(get_pos())]);
+      // console.log(['entering tet', g_tet_num]);
+      // console.log(['entry face', entry_face]);
+      // console.log(['amountOutsideTetrahedron(get_pos())', amountOutsideTetrahedron(get_pos())]);
+
+      out = amountOutsideTetrahedron(get_pos());
+      amount_outside = out[0];
+      biggest_face = out[1];
   }
-  g_last_pos = get_pos();
 }
+
+// function isOutsideTetrahedron(v) {
+//   for(var i = 0; i < 4; i++){
+//     if( v.R31_dot( planes[4*g_tet_num + i] ) > 0.000001 ){
+//       return true;
+//     }
+//   }
+//   return false; 
+// }
+
+// function param_to_isect_line_with_plane(line_start, line_dir, plane){
+//     var denom = plane.R31_dot(line_dir);
+//     if(denom == 0.0){ return 200000000.0; }  // bigger than the initial smallest_p value we will accept
+//     /// solve: R31_dot(plane, line_start + p * line_dir) = 0
+//     ///        R31_dot(plane, line_start) + p * R31_dot(plane, line_dir) = 0
+//     return (-plane.R31_dot(line_start)) / denom;
+//   }
+
+// function ray_trace_through_hyperboloid_tet(init_pos, init_dir, entry_face){
+//     ///Given shape of a tet and a ray, find where the ray exits and through which face
+//     var smallest_p = 100000000.0;
+//     var exit_face = -1;
+//     for(var face=0; face<4; face++){
+//         if(face != entry_face){  // find p when we hit that face
+//             var index = 4*g_tet_num + face;
+//             if(init_dir.R31_dot( planes[index] ) > 0.0){ 
+//                 var p = param_to_isect_line_with_plane(init_pos, init_dir, planes[index]);
+//                 if ((-0.00001 <= p) && (p < smallest_p)) {
+//                     /// if we are on an edge then we don't in fact move as we go through this tet: t = 0.0
+//                     /// also allow tiny negative values, which will come up from floating point errors. 
+//                     /// surface normals check should ensure that even in this case we make progress through 
+//                     /// the triangles around an edge
+//                     smallest_p = p;
+//                     exit_face = face;
+//                 }
+//             }
+//         }
+//     }
+//     // console.log([init_pos, init_dir, smallest_p]);
+//     init_pos.addScaledVector( init_dir, smallest_p ).R31_normalise(); // end_pos
+//     // console.log(init_pos);
+//     return [  init_pos, exit_face ];  
+// }
+
+// function fixOutsideTetrahedron() {
+//   var init_pos = g_last_pos;
+//   var init_dir = get_pos()
+//   init_dir.sub(init_pos).R31_normalise(); // from init_pos to pos
+//   var entry_face = -1;
+//   while (isOutsideTetrahedron(get_pos())){
+//       // find which face the straight line from last position to here goes through, move g_currentBoost 
+//       // appropriately, check again that we are inside, remember our entry face into the last tet so we don't 
+//       // go backwards.
+//       var out = ray_trace_through_hyperboloid_tet(init_pos, init_dir, entry_face);
+//       var exit_pos = out[0];
+//       var exit_face = out[1];
+//       var index = 4*g_tet_num + exit_face;
+//       entry_face = entering_face_nums[ index ];
+//       console.log(['exiting tet', g_tet_num]);
+//       console.log(['exit face', exit_face]);  // can crash on this being -1...
+//       var tsfm = SO31tsfms[ index ];
+//       g_tet_num = other_tet_nums[ index ];
+//       g_material.uniforms.tetNum.value = g_tet_num;
+//       g_currentWeight += weights[ index ];
+//       g_material.uniforms.currentWeight.value = g_currentWeight;
+//       g_currentBoost.multiply(tsfm);
+
+//       init_dir.addScaledVector( exit_pos, init_dir.R31_dot(exit_pos)).applyMatrix4(tsfm).R31_normalise();
+//       tsfm.transpose();
+//       exit_pos.applyMatrix4(tsfm); 
+//       tsfm.transpose();
+//       init_pos = exit_pos;
+//       console.log(['entering tet', g_tet_num]);
+//       console.log(['entry face', entry_face]);
+//       console.log(['isOutsideTetrahedron(exit_pos)', isOutsideTetrahedron(exit_pos)]);
+//       console.log(['isOutsideTetrahedron(get_pos())', isOutsideTetrahedron(get_pos())]);
+//       /// sometimes exit_pos is outside the tet it's supposed to be, which is bad...
+//       /// clamp it so its inside?
+//   }
+//   g_last_pos = get_pos();
+// }
