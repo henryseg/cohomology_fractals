@@ -64,8 +64,8 @@ var init = function(){
   }
   else{
     var request = new XMLHttpRequest(); /// get triangulation data, code from https://stackoverflow.com/questions/16991341/json-parse-file-path
-    // request.open("GET", "data/cannon_thurston_data.json", true);
-    request.open("GET", "data/cannon_thurston_data_2.json", true);
+    request.open("GET", "data/cannon_thurston_data.json", true);
+    // request.open("GET", "data/cannon_thurston_data_2.json", true);
     request.send(null);
     request.onreadystatechange = function() {
       if ( request.readyState === 4 && request.status === 200 ) {

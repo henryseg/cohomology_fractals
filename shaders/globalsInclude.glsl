@@ -32,17 +32,17 @@ uniform float currentWeight;
 uniform int maxSteps;
 uniform float maxDist;
 //
-// uniform vec4 planes[8];
-// uniform int otherTetNums[8]; 
-// uniform int entering_face_nums[8]; 
-// uniform float weights[8]; 
-// uniform mat4 SO31tsfms[8];
+uniform vec4 planes[8];
+uniform int otherTetNums[8]; 
+uniform int entering_face_nums[8]; 
+uniform float weights[8]; 
+uniform mat4 SO31tsfms[8];
 
-uniform vec4 planes[24];
-uniform int otherTetNums[24]; 
-uniform int entering_face_nums[24]; 
-uniform float weights[24]; 
-uniform mat4 SO31tsfms[24];
+// uniform vec4 planes[24];
+// uniform int otherTetNums[24]; 
+// uniform int entering_face_nums[24]; 
+// uniform float weights[24]; 
+// uniform mat4 SO31tsfms[24];
 
 //--------------------------------------------
 //Lighting Variables & Global Object Variables
