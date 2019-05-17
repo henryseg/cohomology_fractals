@@ -7,7 +7,6 @@ var g_controls;
 var g_geometry;
 var g_rotation;
 var g_currentBoost;
-var g_last_pos = new THREE.Vector4(0.0,0.0,0.0,1.0);
 var g_tet_num = 0;
 var g_currentWeight = 0.0;
 var g_stereoBoosts = [];
@@ -63,13 +62,42 @@ var init = function(){
     document.body.appendChild(WEBGL.getWebGL2ErrorMessage());
   }
   else{
-    var request = new XMLHttpRequest(); /// get triangulation data, code from https://stackoverflow.com/questions/16991341/json-parse-file-path
-    request.open("GET", "data/cannon_thurston_data.json", true);
-    // request.open("GET", "data/cannon_thurston_data_2.json", true);
-    request.send(null);
-    request.onreadystatechange = function() {
-      if ( request.readyState === 4 && request.status === 200 ) {
-        cannon_thurston_data = JSON.parse(request.responseText);
+    loadData();
+    
+    //Setup our THREE scene--------------------------------
+	  time = Date.now();
+	  textFPS = document.getElementById('fps');
+    scene = new THREE.Scene();
+    var canvas  = document.createElement('canvas');
+    var context = canvas.getContext('webgl2');
+    renderer = new THREE.WebGLRenderer({canvas: canvas, context: context});
+    document.body.appendChild(renderer.domElement);
+    g_screenResolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
+    g_screenShotResolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
+    g_effect = new THREE.VREffect(renderer);
+    camera = new THREE.OrthographicCamera(-1,1,1,-1,1/Math.pow(2,53),1);
+    g_controls = new THREE.Controls();
+    g_rotation = new THREE.Quaternion();
+    g_controllerBoosts.push(new THREE.Matrix4());
+    g_controllerBoosts.push(new THREE.Matrix4());
+    g_currentBoost = new THREE.Matrix4(); // boost for camera relative to central cell
+	  //We need to load the shaders from file
+    //since web is async we need to wait on this to finish
+    loadShaders();
+  }
+
+  stats = new Stats(); stats.showPanel(1); stats.showPanel(2); stats.showPanel(0); document.body.appendChild(stats.dom);
+
+}
+
+var globalsFrag;
+var mainFrag;
+
+var loadData = function(){
+  var loader2 = new THREE.FileLoader();
+  loader2.load('data/cannon_thurston_data.json',function(data){
+  // loader2.load('data/cannon_thurston_data_2.json',function(data){
+        cannon_thurston_data = JSON.parse(data);
         console.log(cannon_thurston_data);
         //Setup triangulation data
         /// set up a for loop to build planes array using array2vector4...
@@ -89,38 +117,8 @@ var init = function(){
         for(i=0;i<cannon_thurston_data[5].length;i++){
           tet_vertices.push(array2vector4(cannon_thurston_data[5][i]));
         }
-      }
-    }
-    
-    //Setup our THREE scene--------------------------------
-	  time = Date.now();
-	  textFPS = document.getElementById('fps');
-    scene = new THREE.Scene();
-    var canvas  = document.createElement('canvas');
-    var context = canvas.getContext('webgl2');
-    renderer = new THREE.WebGLRenderer({canvas: canvas, context: context});
-    document.body.appendChild(renderer.domElement);
-    g_screenResolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
-    g_screenShotResolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
-    g_effect = new THREE.VREffect(renderer);
-    camera = new THREE.OrthographicCamera(-1,1,1,-1,1/Math.pow(2,53),1);
-    g_controls = new THREE.Controls();
-    g_rotation = new THREE.Quaternion();
-    g_controllerBoosts.push(new THREE.Matrix4());
-    g_controllerBoosts.push(new THREE.Matrix4());
-    g_currentBoost = new THREE.Matrix4(); // boost for camera relative to central cell
-	  // initGenerators(4,3,6);
-	  //We need to load the shaders from file
-    //since web is async we need to wait on this to finish
-    loadShaders();
-  }
-
-  stats = new Stats(); stats.showPanel(1); stats.showPanel(2); stats.showPanel(0); document.body.appendChild(stats.dom);
-
+    });
 }
-
-var globalsFrag;
-var mainFrag;
 
 var loadShaders = function(){ //Since our shader is made up of strings we can construct it from parts
   var loader = new THREE.FileLoader();
