@@ -18,22 +18,30 @@ var g_controllerBoosts = [];
 var g_controllerDualPoints = [];
 
 var cannon_thurston_data;
+var g_maxNumTet = 6;
 var planes; 
 var other_tet_nums; 
 var entering_face_nums; 
 var weights; 
 var SO31tsfms; 
 var tet_vertices;
+var gradientThreshholds = [0.0, 0.25, 0.45, 0.75, 1.000001];
+var gradientColours = [new THREE.Vector3(1.0, 1.0, 1.0), 
+                       new THREE.Vector3(0.86274, 0.92941, 0.78431), 
+                       new THREE.Vector3(0.25882, 0.70196, 0.83529), 
+                       new THREE.Vector3(0.10196, 0.13725, 0.49412), 
+                       new THREE.Vector3(0.0, 0.0, 0.0)];
 
 //-------------------------------------------------------
 // Scene Variables
 //-------------------------------------------------------
 var scene;
+var mesh;
 var renderer;
 var camera;
 var maxSteps = 100;
 var maxDist = 7.5;
-var textFPS;
+// var textFPS;
 var time;
 var stats;
 
@@ -42,8 +50,8 @@ var stats;
 //-------------------------------------------------------
 var m_stepDamping = 0.75;
 var m_stepAccum = 0;
-var fpsLog = new Array(10);
-fpsLog.fill(g_targetFPS.value);
+// var fpsLog = new Array(10);
+// fpsLog.fill(g_targetFPS.value);
 
 // json to threejs conversion
 
@@ -61,12 +69,10 @@ var init = function(){
   if(WEBGL.isWebGL2Available() === false){
     document.body.appendChild(WEBGL.getWebGL2ErrorMessage());
   }
-  else{
-    loadData();
-    
+  else{    
     //Setup our THREE scene--------------------------------
 	  time = Date.now();
-	  textFPS = document.getElementById('fps');
+	  // textFPS = document.getElementById('fps');
     scene = new THREE.Scene();
     var canvas  = document.createElement('canvas');
     var context = canvas.getContext('webgl2');
@@ -81,56 +87,83 @@ var init = function(){
     g_controllerBoosts.push(new THREE.Matrix4());
     g_controllerBoosts.push(new THREE.Matrix4());
     g_currentBoost = new THREE.Matrix4(); // boost for camera relative to central cell
-	  //We need to load the shaders from file
+    //We need to load the shaders from file
     //since web is async we need to wait on this to finish
-    loadShaders();
+    loadStuff();
   }
-
   stats = new Stats(); stats.showPanel(1); stats.showPanel(2); stats.showPanel(0); document.body.appendChild(stats.dom);
-
 }
 
 var globalsFrag;
 var mainFrag;
 
-var loadData = function(){
+var loadStuff = function(){
   var loader2 = new THREE.FileLoader();
-  loader2.load('data/cannon_thurston_data.json',function(data){
-  // loader2.load('data/cannon_thurston_data_2.json',function(data){
+    loader2.load('data/cannon_thurston.json',function(data){
         cannon_thurston_data = JSON.parse(data);
-        console.log(cannon_thurston_data);
-        //Setup triangulation data
-        /// set up a for loop to build planes array using array2vector4...
-        planes = [];
-        for(i=0;i<cannon_thurston_data[0].length;i++){
-          planes.push(array2vector4(cannon_thurston_data[0][i]));
-        }
-        other_tet_nums = cannon_thurston_data[1];
-        entering_face_nums = cannon_thurston_data[2];
-        weights = cannon_thurston_data[3];
-        /// set up a for loop to build SO31tsfms array using array2mat4...
-        SO31tsfms = [];
-        for(i=0;i<cannon_thurston_data[4].length;i++){
-          SO31tsfms.push(array2matrix4(cannon_thurston_data[4][i]));
-        }
-        tet_vertices = [];
-        for(i=0;i<cannon_thurston_data[5].length;i++){
-          tet_vertices.push(array2vector4(cannon_thurston_data[5][i]));
-        }
+        // console.log(cannon_thurston_data);
+        var triangulation = 'cPcbbbiht_12';
+        var surfaceIndex = 0;
+        //Setup dat GUI --- SceneManipulator.js
+        initGui();
+        loadShaders();
+        setUpTriangulationAndSurface(triangulation, surfaceIndex);
     });
+}
+
+var setUpTriangulationAndSurface = function(triangulation, surfaceIndex){
+  var triang_surface_data = cannon_thurston_data[triangulation][surfaceIndex];
+  // console.log(triang_surface_data);
+  /// set up a for loop to build planes array using array2vector4...
+  planes = [];
+  other_tet_nums = [];
+  entering_face_nums = [];
+  weights = [];
+  SO31tsfms = [];
+  
+  var data_length = triang_surface_data[0].length;
+  for(i=0;i<4*g_maxNumTet;i++){
+    planes.push(array2vector4(triang_surface_data[0][i%data_length]));  // pad out the extra space in the array 
+    other_tet_nums.push(triang_surface_data[1][i%data_length]);
+    entering_face_nums.push(triang_surface_data[2][i%data_length]);
+    weights.push(triang_surface_data[3][i%data_length]);
+    SO31tsfms.push(array2matrix4(triang_surface_data[4][i%data_length]));
+  } 
+  // for(i=0;i<triang_surface_data[0].length;i++){
+  //   planes.push(array2vector4(triang_surface_data[0][i]));
+  // }
+  // other_tet_nums = triang_surface_data[1];
+  // entering_face_nums = triang_surface_data[2];
+  // weights = triang_surface_data[3];
+  // /// set up a for loop to build SO31tsfms array using array2mat4...
+  // SO31tsfms = [];
+  // for(i=0;i<triang_surface_data[4].length;i++){
+  //   SO31tsfms.push(array2matrix4(triang_surface_data[4][i]));
+  // }
+
+  // tet_vertices = [];
+  // for(i=0;i<triang_surface_data[5].length;i++){
+  //   tet_vertices.push(array2vector4(ct_data[5][i]));
+  // }
+
+  
 }
 
 var loadShaders = function(){ //Since our shader is made up of strings we can construct it from parts
   var loader = new THREE.FileLoader();
   loader.setResponseType('text');
   loader.load('shaders/fragment.glsl',function(main){
-      // loader.load('shaders/hyperbolic.glsl', function(hyperbolic){
-          loader.load('shaders/globalsInclude.glsl', function(globals){
-          //pass full shader string to finish our init
-          globalsFrag = globals;
-          mainFrag = main;
-          finishInit(globals.concat(main));
-        // });
+      loader.load('shaders/globalsInclude.glsl', function(globals){
+      //pass full shader string to finish our init
+      // globals = globals.replace(/##arrayLength##/g, planes.length.toString()); //global replace all occurrences
+      globals = globals.replace(/##arrayLength##/g, (4*g_maxNumTet).toString()); //global replace all occurrences
+      // Seems to cause performance issues when we reload the shader when changing the triangulation. 
+      // May be better to fix the shader array length once and for all, and pad the smaller triangulation arrays 
+      // to make them stop complaining...
+      globalsFrag = globals;
+      // console.log(globals);
+      mainFrag = main;
+      finishInit(globals.concat(main));
     });
   });
   
@@ -152,7 +185,7 @@ var finishInit = function(fShader){
       // cellBoost:{type:"m4", value:g_cellBoost},
       // invCellBoost:{type:"m4", value:g_invCellBoost},
       maxSteps:{type:"i", value:maxSteps},
-      maxDist:{type:"f", value:maxDist},
+      maxDist:{type:"f", value:7.5},
 			// lightPositions:{type:"v4v", value:lightPositions},
       // lightIntensities:{type:"v3v", value:lightIntensities},
       // attnModel:{type:"i", value:attnModel},
@@ -167,6 +200,8 @@ var finishInit = function(fShader){
       entering_face_nums:{type:"i", value: entering_face_nums},
       weights:{type:"f", value: weights},
       SO31tsfms:{type:"m4", value: SO31tsfms},
+      gradientThreshholds:{type:"f", value: gradientThreshholds},
+      gradientColours:{type:"v3", value: gradientColours}
       // globalObjectBoost:{type:"m4v", value:globalObjectBoost},
       // globalObjectRadius:{type:"v3v", value:globalObjectRadius},
 			// halfCubeDualPoints:{type:"v4v", value:hCDP},
@@ -191,8 +226,6 @@ var finishInit = function(fShader){
   });
 
   g_effect.setSize(g_screenResolution.x, g_screenResolution.y);
-  //Setup dat GUI --- SceneManipulator.js
-  initGui();
 
   //Setup a "quad" to render on-------------------------
   var geom = new THREE.BufferGeometry();
@@ -206,7 +239,7 @@ var finishInit = function(fShader){
     -1.0,  1.0, 0.0
   ]);
   geom.addAttribute('position',new THREE.BufferAttribute(vertices,3));
-  var mesh = new THREE.Mesh(geom, g_material);
+  mesh = new THREE.Mesh(geom, g_material);
   scene.add(mesh);
 
   animate();
@@ -220,10 +253,12 @@ var animate = function(){
   // maxSteps = calcMaxSteps(fps.getFPS(), maxSteps);
   // g_material.uniforms.maxSteps.value = maxSteps;
   
+
   g_controls.update();
   THREE.VRController.update();
   
-  //console.log(g_currentBoost.elements);
+
+  // console.log(g_currentBoost.elements);
   // console.log(g_tet_num);
   g_effect.render(scene, camera, animate);
   stats.end();

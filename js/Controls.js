@@ -98,17 +98,9 @@ THREE.Controls = function(done){
             var m = translateByVector(deltaPosition);
             g_currentBoost.premultiply(m);
         }
-        // var fixIndex = fixOutsideCentralCell(g_currentBoost); //moves camera back to main cell
-        // g_currentBoost.gramSchmidt(g_geometry);
-        // if(fixIndex !== -1){
-           // g_cellBoost = g_cellBoost.premultiply(invGens[fixIndex]); //keeps track of how many cells we've moved 
-           // g_cellBoost.gramSchmidt(g_geometry);
-           // g_invCellBoost.getInverse(g_cellBoost);
-        // }
-
 
         // fix things if we are outside of our tetrahedron...
-       
+  
         fixOutsideTetrahedron();
 
         //--------------------------------------------------------------------

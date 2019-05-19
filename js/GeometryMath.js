@@ -130,25 +130,25 @@ function fixOutsideTetrahedron() {
   var out = amountOutsideTetrahedron(get_pos());
   var amount_outside = out[0];
   var biggest_face = out[1];
-  while ( amount_outside > 0.000001 && biggest_face != entry_face ){
+  while ( amount_outside > 0.0000001 && biggest_face != entry_face ){
       // find which face the straight line from last position to here goes through, move g_currentBoost 
       // appropriately, check again that we are inside, remember our entry face into the last tet so we don't 
       // go backwards.
 
       var index = 4*g_tet_num + biggest_face;
       entry_face = entering_face_nums[ index ];
-      // console.log(['exiting tet', g_tet_num]);
-      // console.log(['exit face', biggest_face]);  
-      var tsfm = SO31tsfms[ index ];
+      console.log(['exiting tet', g_tet_num]);
+      console.log(['exit face', biggest_face]);  
+      
       g_tet_num = other_tet_nums[ index ];
       g_material.uniforms.tetNum.value = g_tet_num;
       g_currentWeight += weights[ index ];
       g_material.uniforms.currentWeight.value = g_currentWeight;
-      g_currentBoost.multiply(tsfm);
+      g_currentBoost.multiply(SO31tsfms[ index ]);
 
-      // console.log(['entering tet', g_tet_num]);
-      // console.log(['entry face', entry_face]);
-      // console.log(['amountOutsideTetrahedron(get_pos())', amountOutsideTetrahedron(get_pos())]);
+      console.log(['entering tet', g_tet_num]);
+      console.log(['entry face', entry_face]);
+      console.log(['amountOutsideTetrahedron(get_pos())', amountOutsideTetrahedron(get_pos())[0]]);
 
       out = amountOutsideTetrahedron(get_pos());
       amount_outside = out[0];
