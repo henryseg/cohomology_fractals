@@ -180,7 +180,7 @@ void main(){
 
   // float weight = float(tetNum);
   // float weight = maxDist - 5.0*gl_FragCoord.x/screenResolution.x;
-  weight = 0.3 * weight;
+  weight = contrast * weight;
   weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  //faster than atan, similar
   // weight = 0.5 + atan(0.3 * weight)/PI;  // between 0.0 and 1.0
   out_FragColor = general_gradient(weight, gradientThreshholds, gradientColours);

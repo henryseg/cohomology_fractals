@@ -51,6 +51,8 @@ function updateUniformsFromUI()
 var resetPosition = function(){
   g_tet_num = 0;
   g_material.uniforms.tetNum.value = g_tet_num;
+  g_currentWeight = 0.0;
+  g_material.uniforms.currentWeight.value = g_currentWeight;
   g_currentBoost.identity();
   g_controllerBoosts[0].identity();
 }
@@ -70,6 +72,7 @@ var initGui = function(){
     eToHScale:1.0,
     maxDist:7.5,
     fov:90,
+    contrast:-1.2,
     // toggleStereo:false,
     // rotateEyes:false,
     // autoSteps:true,
@@ -107,6 +110,7 @@ var initGui = function(){
   var scaleController = gui.add(guiInfo, 'eToHScale',0.25,4.0).name("Euc to hyp scale");
   var distController = gui.add(guiInfo, 'maxDist',1.0,15.0).name("Screen dist");
   var fovController = gui.add(guiInfo, 'fov',40,180).name("FOV");
+  var contrastController = gui.add(guiInfo, 'contrast',-5.0,2.0).name("Contrast");
   // var lightFalloffController = gui.add(guiInfo, 'falloffModel', {InverseLinear: 1, InverseSquare:2, InverseCube:3, Physical: 4, None:5}).name("Light Falloff");
   // var shadowController = gui.add(guiInfo, 'renderShadows', {NoShadows: 0, Local: 1, Global: 2, LocalAndGlobal: 3}).name("Shadows");
   // var softnessController = gui.add(guiInfo, 'shadowSoftness', 0,0.25).name("Shadow Softness");
@@ -240,6 +244,10 @@ var initGui = function(){
 
   fovController.onChange(function(value){
     g_material.uniforms.fov.value = value;
+  });
+
+  contrastController.onChange(function(value){
+    g_material.uniforms.contrast.value = Math.exp(value);
   });
 
   // debugUIController.onFinishChange(function(value){

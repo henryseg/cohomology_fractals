@@ -31,6 +31,7 @@ uniform float currentWeight;
 // uniform mat4 invCellBoost;
 uniform int maxSteps;
 uniform float maxDist;
+uniform float contrast;
 //
 uniform vec4 planes[##arrayLength##];   // ##arrayLength## gets replaced when we loadShaders in Main.js
 uniform int otherTetNums[##arrayLength##]; 
