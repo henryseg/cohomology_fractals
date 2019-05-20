@@ -73,6 +73,7 @@ var initGui = function(){
     maxDist:7.5,
     fov:90,
     contrast:-1.2,
+    viewType:0,
     // toggleStereo:false,
     // rotateEyes:false,
     // autoSteps:true,
@@ -109,8 +110,9 @@ var initGui = function(){
   // var thicknessController = gui.add(guiInfo, 'edgeThickness', 0, 5).name("Edge Thickness");
   var scaleController = gui.add(guiInfo, 'eToHScale',0.25,4.0).name("Euc to hyp scale");
   var distController = gui.add(guiInfo, 'maxDist',1.0,15.0).name("Screen dist");
-  var fovController = gui.add(guiInfo, 'fov',40,180).name("FOV");
   var contrastController = gui.add(guiInfo, 'contrast',-5.0,2.0).name("Contrast");
+  var fovController = gui.add(guiInfo, 'fov',40,180).name("FOV");
+  var viewTypeController = gui.add(guiInfo, 'viewType', {Material: 0, Ideal: 1}).name("View type");
   // var lightFalloffController = gui.add(guiInfo, 'falloffModel', {InverseLinear: 1, InverseSquare:2, InverseCube:3, Physical: 4, None:5}).name("Light Falloff");
   // var shadowController = gui.add(guiInfo, 'renderShadows', {NoShadows: 0, Local: 1, Global: 2, LocalAndGlobal: 3}).name("Shadows");
   // var softnessController = gui.add(guiInfo, 'shadowSoftness', 0,0.25).name("Shadow Softness");
@@ -248,6 +250,10 @@ var initGui = function(){
 
   contrastController.onChange(function(value){
     g_material.uniforms.contrast.value = Math.exp(value);
+  });
+
+  viewTypeController.onChange(function(value){
+    g_material.uniforms.viewType.value = value;
   });
 
   // debugUIController.onFinishChange(function(value){

@@ -187,6 +187,7 @@ var finishInit = function(fShader){
       maxSteps:{type:"i", value:maxSteps},
       maxDist:{type:"f", value:7.5},
       contrast:{type:"f", value:Math.exp(-1.2)},
+      viewType:{type:"i", value:0},
 			// lightPositions:{type:"v4v", value:lightPositions},
       // lightIntensities:{type:"v3v", value:lightIntensities},
       // attnModel:{type:"i", value:attnModel},

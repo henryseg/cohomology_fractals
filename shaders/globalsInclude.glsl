@@ -32,6 +32,7 @@ uniform float currentWeight;
 uniform int maxSteps;
 uniform float maxDist;
 uniform float contrast;
+uniform int viewType;
 //
 uniform vec4 planes[##arrayLength##];   // ##arrayLength## gets replaced when we loadShaders in Main.js
 uniform int otherTetNums[##arrayLength##]; 

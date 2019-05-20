@@ -105,13 +105,6 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
     return total_face_weight;
 }
 
-vec4 get_ray_dir(vec2 resolution, vec2 fragCoord){ 
-    vec2 xy = 0.2*((fragCoord - 0.5*resolution)/resolution.x);
-    float z = 0.1/tan(radians(fov*0.5));
-    vec4 p =  R31_normalise(vec4(xy,-z,0.0));
-    return p;
-}
-
 /// --- Graph-trace code --- ///
 
 float amountOutsideTetrahedron(vec4 v, int tetNum, out int biggest_face) {
@@ -132,11 +125,12 @@ vec4 pointOnGeodesic(vec4 u, vec4 vPrime, float dist){
   return u*cosh(dist) + vPrime*sinh(dist);
 }
 
-float graph_trace(vec4 pixel_pt, int tetNum){
+float graph_trace(inout vec4 pixel_pt, inout int tetNum, out mat4 tsfm){ // tsfm is matrix to send pixel_pt to its image in the tetrahedron coordinates it is in
   float total_face_weight = 0.0;
   int entry_face = -1;
   int index;
   int biggest_face;
+  tsfm = mat4(1.0);
   for(int i=0; i<maxSteps; i++){
       if ( amountOutsideTetrahedron(pixel_pt, tetNum, biggest_face) > 0.0000001 && biggest_face != entry_face ){
         index = 4*tetNum + biggest_face;
@@ -144,15 +138,15 @@ float graph_trace(vec4 pixel_pt, int tetNum){
         tetNum = otherTetNums[ index ];
         total_face_weight += weights[ index ];
         pixel_pt *= SO31tsfms[ index ];
-        // pixel_pt = R31_normalise(pixel_pt);  ## doesn't help?
+        tsfm *= SO31tsfms[ index ];
+        // if (R31_dot(pixel_pt, pixel_pt) > -0.5){ return -1000.0; } // errors accumulate and we get junk!
       }
       else{ break; }
     }
     return total_face_weight;
   }
 
-float cool_threshholds[5] = float[5](0.0, 0.25, 0.45, 0.75, 1.000001);
-vec3 cool_colours[5] = vec3[5](vec3(1.0, 1.0, 1.0), vec3(0.86274, 0.92941, 0.78431), vec3(0.25882, 0.70196, 0.83529), vec3(0.10196, 0.13725, 0.49412), vec3(0.0, 0.0, 0.0));
+/// --- Colour gradient code --- ///
 
 int find_band(float t, float threshholds[5]){
     for(int j=1;j<4;j++){
@@ -160,26 +154,46 @@ int find_band(float t, float threshholds[5]){
     }
     return 4;
 }
-
 vec4 general_gradient(float t, float threshholds[5], vec3 colours[5]){
     int i = find_band(t, threshholds);
     return vec4( mix(colours[i-1], colours[i],(t - threshholds[i-1])/(threshholds[i] - threshholds[i-1]) ), 1.0);
 }
 
-// #define PI 3.1415926535897932384626433832795;
+/// --- Ray init pt and directions code --- ///
+
+vec4 get_ray_dir(vec2 resolution, vec2 fragCoord){ 
+    vec2 xy = 0.2*((fragCoord - 0.5*resolution)/resolution.x);
+    float z = 0.1/tan(radians(fov*0.5));
+    vec4 p =  R31_normalise(vec4(xy,-z,0.0));
+    return p;
+}
 
 void main(){
-  vec4 init_pt = vec4(0.0,0.0,0.0,1.0);
-  vec4 init_dir = get_ray_dir(screenResolution.xy, gl_FragCoord.xy);
-  
-  init_pt *= currentBoost;
-  init_dir *= currentBoost; 
+  vec4 init_pt;
+  vec4 init_dir;
+  float weight;
+  if(viewType == 0){ // material
+    init_pt = vec4(0.0,0.0,0.0,1.0);
+    init_dir = get_ray_dir(screenResolution.xy, gl_FragCoord.xy);
+    init_pt *= currentBoost;
+    init_dir *= currentBoost; 
+    weight = currentWeight + ray_trace(init_pt, init_dir, maxDist, tetNum);
+  }
+  else{ // ideal
+    vec2 xy = ((gl_FragCoord.xy - 0.5*screenResolution.xy)/screenResolution.x);
+    float foo = 0.5*dot(xy, xy);
+    init_pt = vec4(xy.x, xy.y, foo, foo + 1.0);   // parabolic transformation magic by Saul
+    init_dir = vec4(xy.x, xy.y, foo - 1.0, foo);
+    init_pt *= currentBoost;
+    init_dir *= currentBoost; 
+    mat4 tsfm = mat4(1.0);
+    int currentTetNum = tetNum;  // gets modified inside graph_trace
+    weight = currentWeight + graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt
+    // init_pt *= tsfm;  // the point gets moved back in graph_trace
+    init_dir *= tsfm;  // move the direction back to here
+    weight += ray_trace(init_pt, init_dir, maxDist, currentTetNum);
+  }
 
-  float weight = currentWeight + ray_trace(init_pt, init_dir, maxDist, tetNum);
-  // float weight = currentWeight + graph_trace(pointOnGeodesic(init_pt, init_dir, maxDist), tetNum);
-
-  // float weight = float(tetNum);
-  // float weight = maxDist - 5.0*gl_FragCoord.x/screenResolution.x;
   weight = contrast * weight;
   weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  //faster than atan, similar
   // weight = 0.5 + atan(0.3 * weight)/PI;  // between 0.0 and 1.0
