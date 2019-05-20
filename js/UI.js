@@ -9,43 +9,13 @@
 //-------------------------------------------------------
 
 var guiInfo;
+var surfaceController;
 
 // Inputs are from the UI parameterizations.
 // gI is the guiInfo object from initGui
 function updateUniformsFromUI()
 {
 
-  // var maxDist = 10.0;
-  // if( g_geometry == Geometry. tean )
-  //   maxDist = 50.0; // Needs to be larger for euclidean.
-  // if( g_geometry == Geometry.Spherical )
-  //   maxDist = Math.PI; // Only go to antipode.
-
-  // initGenerators(p,q,r);
-  // initLights(g_geometry);
-  // g_material.uniforms.lightPositions.value = lightPositions;
-  // g_material.uniforms.lightIntensities.value = lightIntensities;
-  // initObjects(g_geometry);
-  // g_material.uniforms.globalObjectBoost.value = globalObjectBoost;
-  // g_material.uniforms.globalObjectRadius.value = globalObjectRadius;
-  
-  // g_material.uniforms.geometry.value = g;
-  // g_material.uniforms.invGenerators.value = invGens;
-  // g_material.uniforms.halfCubeDualPoints.value = hCDP;
-  // g_material.uniforms.halfCubeWidthKlein.value = hCWK;
-  // g_material.uniforms.cut1.value = g_cut1;
-  // g_material.uniforms.cut4.value = g_cut4;
-  // g_material.uniforms.tubeRad.value = g_tubeRad;
-  // g_material.uniforms.cellPosition.value = g_cellPosition;
-  // g_material.uniforms.cellSurfaceOffset.value = g_cellSurfaceOffset;
-  // g_material.uniforms.vertexPosition.value = g_vertexPosition;
-  // g_material.uniforms.vertexSurfaceOffset.value = g_vertexSurfaceOffset;
-  // g_material.uniforms.attnModel.value = guiInfo.falloffModel;
-  // g_material.uniforms.maxDist.value = maxDist;
-
-  // g_material.uniforms.useSimplex.value = !isCubical;
-  // g_material.uniforms.simplexMirrorsKlein.value = simplexMirrors;
-  // g_material.uniforms.simplexDualPoints.value = simplexDualPoints;
 }
 
 var resetPosition = function(){
@@ -92,6 +62,7 @@ var initGui = function(){
       takeScreenshot();
     }
   };
+
   var triangulationKeys = Object.keys(cannon_thurston_data);
   triangulationKeys.sort();
   triangulationDict = {};
@@ -102,19 +73,17 @@ var initGui = function(){
   var gui = new dat.GUI();
   gui.close();
   //scene settings ---------------------------------
-  // var sceneController = gui.add(guiInfo, 'sceneIndex',{Simplex_cuts: 0, Edge_tubes: 1, Medial_surface: 2, Cube_planes: 3}).name("Scene");
-  var triangulationController = gui.add(guiInfo, 'triangulation', triangulationDict).name("Triangulation");
-  var gradientController = gui.add(guiInfo, 'gradientIndex', {Cool: 0, Warm: 1, Neon: 2, Green: 3}).name("Gradient");
-  // var pController = gui.add(guiInfo, 'p', {"3":3, "4":4, "5":5, "6":6, "7":7, "8":8, "9":9, "10":10, "11":11, "12":12, "30":30}).name("P");
-  // var qController = gui.add(guiInfo, 'q', {"3":3, "4":4, "5":5, "6":6, "7":7, "8":8, "9":9, "10":10, "11":11, "12":12, "30":30}).name("Q");
-  // var rController = gui.add(guiInfo, 'r', {"3":3, "4":4, "5":5, "6":6, "7":7, "8":8, "9":9, "10":10, "11":11, "12":12, "30":30}).name("R");
-  // var thicknessController = gui.add(guiInfo, 'edgeThickness', 0, 5).name("Edge Thickness");
+  var triangFolder = gui.addFolder('Triangulation and surface');
+  triangFolder.open();
+  var triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Triangulation");
+  surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface");
+  var gradientController = gui.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3}).name("Gradient");
   var scaleController = gui.add(guiInfo, 'eToHScale',0.25,4.0).name("Euc to hyp scale");
   var distController = gui.add(guiInfo, 'maxDist',1.0,15.0).name("Screen dist");
   var stepsController = gui.add(guiInfo, 'maxSteps', 1,300).name("Max iterations");
   var contrastController = gui.add(guiInfo, 'contrast',-5.0,2.0).name("Contrast");
-  var fovController = gui.add(guiInfo, 'fov',40,180).name("FOV");
-  var viewTypeController = gui.add(guiInfo, 'viewType', {Material: 0, Ideal: 1}).name("View type");
+  var fovController = gui.add(guiInfo, 'fov',30,180).name("FOV");
+  var viewTypeController = gui.add(guiInfo, 'viewType', {'Material': 0, 'Ideal': 1}).name("View type");
   // var lightFalloffController = gui.add(guiInfo, 'falloffModel', {InverseLinear: 1, InverseSquare:2, InverseCube:3, Physical: 4, None:5}).name("Light Falloff");
   // var shadowController = gui.add(guiInfo, 'renderShadows', {NoShadows: 0, Local: 1, Global: 2, LocalAndGlobal: 3}).name("Shadows");
   // var softnessController = gui.add(guiInfo, 'shadowSoftness', 0,0.25).name("Shadow Softness");
@@ -153,6 +122,18 @@ var initGui = function(){
     g_material.uniforms.entering_face_nums.value = entering_face_nums;
     g_material.uniforms.weights.value = weights;
     g_material.uniforms.SO31tsfms.value = SO31tsfms;
+
+    triangFolder.remove(surfaceController); // renew surface controller ui
+    surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface"); 
+    surfaceController.onFinishChange(function(value){  
+      setUpTriangulationAndSurface(guiInfo.triangulation, value);
+      g_material.uniforms.planes.value = planes;  
+      g_material.uniforms.otherTetNums.value = other_tet_nums;
+      g_material.uniforms.entering_face_nums.value = entering_face_nums;
+      g_material.uniforms.weights.value = weights;
+      g_material.uniforms.SO31tsfms.value = SO31tsfms;
+    });
+
   });
 
   gradientController.onFinishChange(function(value){

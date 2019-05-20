@@ -19,6 +19,7 @@ var g_controllerDualPoints = [];
 
 var cannon_thurston_data;
 var g_maxNumTet = 6;
+var triangIntegerWeights = {};
 var planes; 
 var other_tet_nums; 
 var entering_face_nums; 
@@ -104,15 +105,24 @@ var loadStuff = function(){
         // console.log(cannon_thurston_data);
         var triangulation = 'cPcbbbiht_12';
         var surfaceIndex = 0;
-        //Setup dat GUI --- SceneManipulator.js
-        initGui();
+        
         loadShaders();
         setUpTriangulationAndSurface(triangulation, surfaceIndex);
+        //Setup dat GUI --- SceneManipulator.js
+        initGui();
     });
 }
 
 var setUpTriangulationAndSurface = function(triangulation, surfaceIndex){
-  var triang_surface_data = cannon_thurston_data[triangulation][surfaceIndex];
+  var triang_data = cannon_thurston_data[triangulation];
+  triangIntegerWeights = {};
+  for(i=0;i<triang_data.length;i++){
+    triangIntegerWeights[triang_data[i][5].toString()] = i;
+    //triangIntegerWeights.push(triang_data[i][5]);
+  }
+  // console.log(triangIntegerWeights);
+
+  var triang_surface_data = triang_data[surfaceIndex];  
   // console.log(triang_surface_data);
   /// set up a for loop to build planes array using array2vector4...
   planes = [];
@@ -129,6 +139,7 @@ var setUpTriangulationAndSurface = function(triangulation, surfaceIndex){
     weights.push(triang_surface_data[3][i%data_length]);
     SO31tsfms.push(array2matrix4(triang_surface_data[4][i%data_length]));
   } 
+
   // for(i=0;i<triang_surface_data[0].length;i++){
   //   planes.push(array2vector4(triang_surface_data[0][i]));
   // }
@@ -158,8 +169,8 @@ var loadShaders = function(){ //Since our shader is made up of strings we can co
       // globals = globals.replace(/##arrayLength##/g, planes.length.toString()); //global replace all occurrences
       globals = globals.replace(/##arrayLength##/g, (4*g_maxNumTet).toString()); //global replace all occurrences
       // Seems to cause performance issues when we reload the shader when changing the triangulation. 
-      // May be better to fix the shader array length once and for all, and pad the smaller triangulation arrays 
-      // to make them stop complaining...
+      // Better to fix the shader array length once and for all, and pad the smaller triangulation arrays 
+      // to make them stop complaining.
       globalsFrag = globals;
       // console.log(globals);
       mainFrag = main;
