@@ -71,6 +71,7 @@ var initGui = function(){
     // edgeThickness:1.5,
     eToHScale:1.0,
     maxDist:7.5,
+    maxSteps:100,
     fov:90,
     contrast:-1.2,
     viewType:0,
@@ -110,6 +111,7 @@ var initGui = function(){
   // var thicknessController = gui.add(guiInfo, 'edgeThickness', 0, 5).name("Edge Thickness");
   var scaleController = gui.add(guiInfo, 'eToHScale',0.25,4.0).name("Euc to hyp scale");
   var distController = gui.add(guiInfo, 'maxDist',1.0,15.0).name("Screen dist");
+  var stepsController = gui.add(guiInfo, 'maxSteps', 1,300).name("Max iterations");
   var contrastController = gui.add(guiInfo, 'contrast',-5.0,2.0).name("Contrast");
   var fovController = gui.add(guiInfo, 'fov',40,180).name("FOV");
   var viewTypeController = gui.add(guiInfo, 'viewType', {Material: 0, Ideal: 1}).name("View type");
@@ -242,6 +244,10 @@ var initGui = function(){
 
   distController.onChange(function(value) {
     g_material.uniforms.maxDist.value = value;
+  });
+
+  stepsController.onChange(function(value) {
+    g_material.uniforms.maxSteps.value = value;
   });
 
   fovController.onChange(function(value){
