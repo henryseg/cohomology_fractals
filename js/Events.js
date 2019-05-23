@@ -149,6 +149,8 @@ function takeScreenshot() {
     //w.document.body.style.backgroundColor = "red";
     var img = new Image();
     // Without 'preserveDrawingBuffer' set to true, we must render now
+    g_material.uniforms.maxDist.value = maxDist + Math.log(g_screenShotResolution.x/window.innerWidth); 
+    // resolution goes up, we need to look further to get the same sharpness of the image
     g_material.uniforms.screenResolution.value.x = g_screenShotResolution.x;
     g_material.uniforms.screenResolution.value.y = g_screenShotResolution.y;
     g_effect.setSize(g_screenShotResolution.x, g_screenShotResolution.y);
@@ -157,4 +159,5 @@ function takeScreenshot() {
     img.src = renderer.domElement.toDataURL();
     w.document.body.appendChild(img);
     onResize(); //Resets us back to window size
+    g_material.uniforms.maxDist.value = maxDist; //Reset back to default
 }

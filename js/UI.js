@@ -44,7 +44,7 @@ var initGui = function(){
     maxSteps:100,
     fov:90,
     contrast:-1.2,
-    viewType:0,
+    viewType:1,
     // toggleStereo:false,
     // rotateEyes:false,
     // autoSteps:true,

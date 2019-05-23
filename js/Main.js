@@ -103,7 +103,6 @@ var loadStuff = function(){
   var loader2 = new THREE.FileLoader();
     loader2.load('data/cannon_thurston.json',function(data){
         cannon_thurston_data = JSON.parse(data);
-        // console.log(cannon_thurston_data);
         var triangulation = 'cPcbbbiht_12';
         var surfaceIndex = 0;
         
@@ -199,7 +198,7 @@ var finishInit = function(fShader){
       maxSteps:{type:"i", value:maxSteps},
       maxDist:{type:"f", value:7.5},
       contrast:{type:"f", value:Math.exp(-1.2)},
-      viewType:{type:"i", value:0},
+      viewType:{type:"i", value:1},
 			// lightPositions:{type:"v4v", value:lightPositions},
       // lightIntensities:{type:"v3v", value:lightIntensities},
       // attnModel:{type:"i", value:attnModel},
