@@ -80,7 +80,7 @@ var init = function(){
     renderer = new THREE.WebGLRenderer({canvas: canvas, context: context});
     document.body.appendChild(renderer.domElement);
     g_screenResolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
-    g_screenShotResolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
+    g_screenShotResolution = new THREE.Vector2(4096,4096);   //window.innerWidth, window.innerHeight);
     g_effect = new THREE.VREffect(renderer);
     camera = new THREE.OrthographicCamera(-1,1,1,-1,1/Math.pow(2,53),1);
     g_controls = new THREE.Controls();
@@ -88,6 +88,7 @@ var init = function(){
     g_controllerBoosts.push(new THREE.Matrix4());
     g_controllerBoosts.push(new THREE.Matrix4());
     g_currentBoost = new THREE.Matrix4(); // boost for camera relative to central cell
+    // g_currentBoost = new THREE.Matrix4().makeRotationZ(Math.PI/3.0);
     //We need to load the shaders from file
     //since web is async we need to wait on this to finish
     loadStuff();
