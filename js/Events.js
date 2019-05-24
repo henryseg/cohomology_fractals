@@ -147,17 +147,47 @@ function takeScreenshot() {
     var w = window.open('', '');
     w.document.title = "Screenshot";
     //w.document.body.style.backgroundColor = "red";
-    var img = new Image();
+    
     // Without 'preserveDrawingBuffer' set to true, we must render now
     g_material.uniforms.maxDist.value = maxDist + Math.log(g_screenShotResolution.x/window.innerWidth); 
     // resolution goes up, we need to look further to get the same sharpness of the image
-    g_material.uniforms.screenResolution.value.x = g_screenShotResolution.x;
-    g_material.uniforms.screenResolution.value.y = g_screenShotResolution.y;
-    g_effect.setSize(g_screenShotResolution.x, g_screenShotResolution.y);
-    g_effect.render(scene, camera, animate);
-    //renderer.render(scene, camera);
-    img.src = renderer.domElement.toDataURL();
-    w.document.body.appendChild(img);
+    var numTiles = new THREE.Vector2().copy(g_screenShotResolution).divideScalar(4096).round();
+    g_material.uniforms.numTiles.value.x = numTiles.x;
+    g_material.uniforms.numTiles.value.y = numTiles.y;
+    var tileResolution = new THREE.Vector2().copy(g_screenShotResolution).divide(numTiles).round();
+    //will have to mess around if resolution isn't a nice multiple of 4096
+    if (numTiles.x == 1 && numTiles.y == 1){
+        g_material.uniforms.screenResolution.value.x = g_screenShotResolution.x;
+        g_material.uniforms.screenResolution.value.y = g_screenShotResolution.y;
+        g_effect.setSize(g_screenShotResolution.x, g_screenShotResolution.y);
+        g_effect.render(scene, camera, animate);
+        //renderer.render(scene, camera);
+        var img = new Image();
+        img.src = renderer.domElement.toDataURL();
+        w.document.body.appendChild(img);
+    }
+    else{
+        g_material.uniforms.multiScreenShot.value = 1;   
+        g_material.uniforms.screenResolution.value.x = tileResolution.x;
+        g_material.uniforms.screenResolution.value.y = tileResolution.y;
+        g_effect.setSize(tileResolution.x, tileResolution.y);
+        for(var j = 0; j < numTiles.y; j++){
+            g_material.uniforms.tile.value.y = j;
+                for(var i = 0; i < numTiles.x; i++){
+                g_material.uniforms.tile.value.x = i;
+                g_effect.render(scene, camera, animate);
+                var img = new Image();
+                img.src = renderer.domElement.toDataURL();
+                w.document.body.appendChild(img);
+            // w.document.body.createTextNode("This is a paragraph.");
+            // w.document.body.appendChild("<br>");
+            }
+        }
+    }
+
+
+
     onResize(); //Resets us back to window size
     g_material.uniforms.maxDist.value = maxDist; //Reset back to default
+    g_material.uniforms.multiScreenShot.value = 0; 
 }

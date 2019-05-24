@@ -172,15 +172,20 @@ void main(){
   vec4 init_pt;
   vec4 init_dir;
   float weight;
+  vec2 fragCoord = gl_FragCoord.xy;
+  vec2 screenRes = screenResolution.xy;
+  if(multiScreenShot == 1){  // then screenResolution is really tileResolution;
+    fragCoord = (fragCoord + tile * screenResolution) / numTiles;
+  }
   if(viewType == 0){ // material
     init_pt = vec4(0.0,0.0,0.0,1.0);
-    init_dir = get_ray_dir(screenResolution.xy, gl_FragCoord.xy);
+    init_dir = get_ray_dir(screenRes, fragCoord);
     init_pt *= currentBoost;
     init_dir *= currentBoost; 
     weight = currentWeight + ray_trace(init_pt, init_dir, maxDist, tetNum);
   }
   else{ // ideal
-    vec2 xy = ((gl_FragCoord.xy - 0.5*screenResolution.xy)/screenResolution.x);
+    vec2 xy = ((fragCoord - 0.5*screenRes)/screenRes.x);
     float foo = 0.5*dot(xy, xy);
     init_pt = vec4(xy.x, xy.y, foo, foo + 1.0);   // parabolic transformation magic by Saul
     init_dir = vec4(xy.x, xy.y, foo - 1.0, foo);

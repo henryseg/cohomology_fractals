@@ -53,8 +53,8 @@ var initGui = function(){
     // falloffModel: 1,
     // renderShadows: 0,
     // shadowSoftness: 0,
-    screenshotWidth: 4096, //g_screenShotResolution.x,
-    screenshotHeight: 4096, //g_screenShotResolution.y,
+    screenshotWidth: g_screenShotResolution.x,
+    screenshotHeight: g_screenShotResolution.y,
     resetPosition: function(){   
       resetPosition();
     },

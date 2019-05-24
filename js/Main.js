@@ -80,7 +80,7 @@ var init = function(){
     renderer = new THREE.WebGLRenderer({canvas: canvas, context: context});
     document.body.appendChild(renderer.domElement);
     g_screenResolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
-    g_screenShotResolution = new THREE.Vector2(4096,4096);   //window.innerWidth, window.innerHeight);
+    g_screenShotResolution = new THREE.Vector2(8192,8192);  //4096,4096 //window.innerWidth, window.innerHeight);
     g_effect = new THREE.VREffect(renderer);
     camera = new THREE.OrthographicCamera(-1,1,1,-1,1/Math.pow(2,53),1);
     g_controls = new THREE.Controls();
@@ -199,6 +199,10 @@ var finishInit = function(fShader){
       maxDist:{type:"f", value:7.5},
       contrast:{type:"f", value:Math.exp(-1.2)},
       viewType:{type:"i", value:1},
+      multiScreenShot:{type:"i", value:0},
+      tile:{type:"vec2", value: new THREE.Vector2(0,0)},
+      numTiles:{type:"vec2", value: new THREE.Vector2(1,1)},
+
 			// lightPositions:{type:"v4v", value:lightPositions},
       // lightIntensities:{type:"v3v", value:lightIntensities},
       // attnModel:{type:"i", value:attnModel},
