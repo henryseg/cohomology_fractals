@@ -8,11 +8,6 @@
 //   v3 -------- v1
 // z               0
 
-  // vec3 convert_R2_to_ball_model_R3(vec2 p){
-  // float denom = p.x*p.x + p.y*p.y + 1.0; //never zero
-  // return vec3(2.0*p.x/denom, 2.0*p.y/denom, (-1.0 + p.x*p.x + p.y*p.y)/denom);
-  // }
-
   float R31_dot(vec4 u, vec4 v){
     return u.x*v.x + u.y*v.y + u.z*v.z - u.w*v.w; // Lorentz Dot
   }
@@ -24,17 +19,6 @@
   vec4 R31_normalise(vec4 v){
     return v*R31_norm_inv(v);
   }
-  
-  // vec4 Klein_to_hyperboloid(vec3 v){
-  //   // hyperboloid is: -w*w + x*x + y*y + z*z = -1
-  //   // want (w, w*x, w*y, w*z) that satisfies the above
-  //   // so w*w*(-1 + x*x + y*y + z*z) = -1
-  //   // so w = sqrt(-1/(-1 + x*x + y*y + z*z))
-  //   float s = 0.0;
-  //   float temp = 1.0 / (1.0 - dot(v,v));
-  //   if(temp >= 0.0){s = sqrt(temp);}
-  //   return vec4(s, s*v);
-  // }
 
 /// --- Ray-trace code --- ///
 
@@ -125,21 +109,22 @@ vec4 pointOnGeodesic(vec4 u, vec4 vPrime, float dist){
   return u*cosh(dist) + vPrime*sinh(dist);
 }
 
-float graph_trace(inout vec4 pixel_pt, inout int tetNum, out mat4 tsfm){ // tsfm is matrix to send pixel_pt to its image in the tetrahedron coordinates it is in
+float graph_trace(inout vec4 goal_pt, inout int tetNum, out mat4 tsfm){ // tsfm is matrix to send goal_pt to its image in the tetrahedron coordinates it is in
+  // similar function to ray_trace, but different algorithm
   float total_face_weight = 0.0;
   int entry_face = -1;
   int index;
   int biggest_face;
   tsfm = mat4(1.0);
   for(int i=0; i<maxSteps; i++){
-      if ( amountOutsideTetrahedron(pixel_pt, tetNum, biggest_face) > 0.0000001 && biggest_face != entry_face ){
+      if ( amountOutsideTetrahedron(goal_pt, tetNum, biggest_face) > 0.0000001 && biggest_face != entry_face ){
         index = 4*tetNum + biggest_face;
         entry_face = entering_face_nums[ index ];
         tetNum = otherTetNums[ index ];
         total_face_weight += weights[ index ];
-        pixel_pt *= SO31tsfms[ index ];
+        goal_pt *= SO31tsfms[ index ];
         tsfm *= SO31tsfms[ index ];
-        // if (R31_dot(pixel_pt, pixel_pt) > -0.5){ return -1000.0; } // errors accumulate and we get junk!
+        // if (R31_dot(goal_pt, goal_pt) > -0.5){ return -1000.0; } // errors accumulate and we get junk!
       }
       else{ break; }
     }
@@ -161,8 +146,8 @@ vec4 general_gradient(float t, float threshholds[5], vec3 colours[5]){
 
 /// --- Ray init pt and directions code --- ///
 
-vec4 get_ray_dir(vec2 resolution, vec2 fragCoord){ 
-    vec2 xy = 0.2*((fragCoord - 0.5*resolution)/resolution.x);
+vec4 get_ray_dir(vec2 xy){ 
+    xy = 0.2 * xy;
     float z = 0.1/tan(radians(fov*0.5));
     vec4 p =  R31_normalise(vec4(xy,-z,0.0));
     return p;
@@ -172,20 +157,19 @@ void main(){
   vec4 init_pt;
   vec4 init_dir;
   float weight;
-  vec2 fragCoord = gl_FragCoord.xy;
-  vec2 screenRes = screenResolution.xy;
-  if(multiScreenShot == 1){  // then screenResolution is really tileResolution;
-    fragCoord = (fragCoord + tile * screenResolution) / numTiles;
+  vec2 xy = (gl_FragCoord.xy - 0.5*screenResolution.xy)/screenResolution.x;
+  if(multiScreenShot == 1){  // Return multiple 4096x4096 screenshots that can be combined in, e.g. Photoshop.
+    // Here screenResolution is really tileResolution;
+    xy = (xy + tile - 0.5*(numTiles - vec2(1.0,1.0))) / numTiles.x;
   }
   if(viewType == 0){ // material
     init_pt = vec4(0.0,0.0,0.0,1.0);
-    init_dir = get_ray_dir(screenRes, fragCoord);
+    init_dir = get_ray_dir(xy);
     init_pt *= currentBoost;
     init_dir *= currentBoost; 
     weight = currentWeight + ray_trace(init_pt, init_dir, maxDist, tetNum);
   }
   else{ // ideal
-    vec2 xy = ((fragCoord - 0.5*screenRes)/screenRes.x);
     float foo = 0.5*dot(xy, xy);
     init_pt = vec4(xy.x, xy.y, foo, foo + 1.0);   // parabolic transformation magic by Saul
     init_dir = vec4(xy.x, xy.y, foo - 1.0, foo);

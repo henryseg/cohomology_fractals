@@ -179,8 +179,6 @@ function takeScreenshot() {
                 var img = new Image();
                 img.src = renderer.domElement.toDataURL();
                 w.document.body.appendChild(img);
-            // w.document.body.createTextNode("This is a paragraph.");
-            // w.document.body.appendChild("<br>");
             }
         }
     }

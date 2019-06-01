@@ -100,6 +100,22 @@ function translateByVector(v) { // trickery stolen from Jeff Weeks' Curved Space
   return result;
 }
 
+function parabolicBy2DVector(v) {  
+  var dx = v.x; 
+  var dy = v.y;
+  var r2 = 0.5*(dx*dx + dy*dy);
+    var result = new THREE.Matrix4().set(
+    // 1,   0,  -dx,   dx,
+    // 0,   1,  -dy,   dy,
+    // dx, dy, 1-r2,   r2,
+    // dx, dy,  -r2, 1+r2);
+      1,   0,   dx,   dx,
+      0,   1,   dy,   dy,
+    -dx, -dy, 1-r2,  -r2,
+     dx,  dy,   r2, 1+r2);
+    return result;
+}
+
 //----------------------------------------------------------------------
 //  Deal with moving through tetrahedra
 //----------------------------------------------------------------------

@@ -27,7 +27,7 @@ var weights;
 var SO31tsfms; 
 var tet_vertices;
 var gradientThreshholds = [0.0, 0.25, 0.45, 0.75, 1.000001];
-var gradientColours = [new THREE.Vector3(1.0, 1.0, 1.0), 
+var gradientColours = [new THREE.Vector3(1.0, 1.0, 1.0),  // cool
                        new THREE.Vector3(0.86274, 0.92941, 0.78431), 
                        new THREE.Vector3(0.25882, 0.70196, 0.83529), 
                        new THREE.Vector3(0.10196, 0.13725, 0.49412), 
@@ -80,17 +80,26 @@ var init = function(){
     renderer = new THREE.WebGLRenderer({canvas: canvas, context: context});
     document.body.appendChild(renderer.domElement);
     g_screenResolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
-    g_screenShotResolution = new THREE.Vector2(8192,8192);  //4096,4096 //window.innerWidth, window.innerHeight);
+    g_screenShotResolution = new THREE.Vector2(12288,24576);  //12288,24576 //4096,4096 //window.innerWidth, window.innerHeight);
+    // g_screenShotResolution = new THREE.Vector2(4096,8192);  //12288,24576 //4096,4096 //window.innerWidth, window.innerHeight);
     g_effect = new THREE.VREffect(renderer);
     camera = new THREE.OrthographicCamera(-1,1,1,-1,1/Math.pow(2,53),1);
     g_controls = new THREE.Controls();
     g_rotation = new THREE.Quaternion();
     g_controllerBoosts.push(new THREE.Matrix4());
     g_controllerBoosts.push(new THREE.Matrix4());
-    g_currentBoost = new THREE.Matrix4(); // boost for camera relative to central cell
-    // g_currentBoost = new THREE.Matrix4().makeRotationZ(Math.PI/3.0);
-    //We need to load the shaders from file
-    //since web is async we need to wait on this to finish
+    g_currentBoost = new THREE.Matrix4(); // boost for camera relative to tetrahedron
+
+    // Nice initial position for gLLAQbecdfffhhnkqnc_120012:
+    // var temp = parabolicBy2DVector(new THREE.Vector2(0.5,0)).premultiply(new THREE.Matrix4().makeRotationZ(Math.PI + Math.PI/3.5));
+    // g_currentBoost.multiply(temp);
+
+    // Nice initial position for gLMzQbcdefffhhhhhit_122112
+    // var temp = parabolicBy2DVector(new THREE.Vector2(0.7649484590167701,0.12594832555674987));
+    // g_currentBoost.multiply(temp);
+
+    // We need to load the shaders from file
+    // since web is async we need to wait on this to finish
     loadStuff();
   }
   stats = new Stats(); stats.showPanel(1); stats.showPanel(2); stats.showPanel(0); document.body.appendChild(stats.dom);
@@ -104,6 +113,8 @@ var loadStuff = function(){
     loader2.load('data/cannon_thurston.json',function(data){
         cannon_thurston_data = JSON.parse(data);
         var triangulation = 'cPcbbbiht_12';
+        // var triangulation = 'gLLAQbecdfffhhnkqnc_120012';
+        // var triangulation = 'gLMzQbcdefffhhhhhit_122112';
         var surfaceIndex = 0;
         
         loadShaders();
@@ -120,7 +131,6 @@ var setUpTriangulationAndSurface = function(triangulation, surfaceIndex){
     triangIntegerWeights[triang_data[i][5].toString()] = i;
     //triangIntegerWeights.push(triang_data[i][5]);
   }
-  // console.log(triangIntegerWeights);
 
   var triang_surface_data = triang_data[surfaceIndex];  
   // console.log(triang_surface_data);
@@ -138,26 +148,7 @@ var setUpTriangulationAndSurface = function(triangulation, surfaceIndex){
     entering_face_nums.push(triang_surface_data[2][i%data_length]);
     weights.push(triang_surface_data[3][i%data_length]);
     SO31tsfms.push(array2matrix4(triang_surface_data[4][i%data_length]));
-  } 
-
-  // for(i=0;i<triang_surface_data[0].length;i++){
-  //   planes.push(array2vector4(triang_surface_data[0][i]));
-  // }
-  // other_tet_nums = triang_surface_data[1];
-  // entering_face_nums = triang_surface_data[2];
-  // weights = triang_surface_data[3];
-  // /// set up a for loop to build SO31tsfms array using array2mat4...
-  // SO31tsfms = [];
-  // for(i=0;i<triang_surface_data[4].length;i++){
-  //   SO31tsfms.push(array2matrix4(triang_surface_data[4][i]));
-  // }
-
-  // tet_vertices = [];
-  // for(i=0;i<triang_surface_data[5].length;i++){
-  //   tet_vertices.push(array2vector4(ct_data[5][i]));
-  // }
-
-  
+  }   
 }
 
 var loadShaders = function(){ //Since our shader is made up of strings we can construct it from parts
@@ -166,7 +157,6 @@ var loadShaders = function(){ //Since our shader is made up of strings we can co
   loader.load('shaders/fragment.glsl',function(main){
       loader.load('shaders/globalsInclude.glsl', function(globals){
       //pass full shader string to finish our init
-      // globals = globals.replace(/##arrayLength##/g, planes.length.toString()); //global replace all occurrences
       globals = globals.replace(/##arrayLength##/g, (4*g_maxNumTet).toString()); //global replace all occurrences
       // Seems to cause performance issues when we reload the shader when changing the triangulation. 
       // Better to fix the shader array length once and for all, and pad the smaller triangulation arrays 
@@ -181,7 +171,6 @@ var loadShaders = function(){ //Since our shader is made up of strings we can co
 }
 
 var finishInit = function(fShader){
-//  console.log(fShader);
   g_material = new THREE.ShaderMaterial({
     uniforms:{
       // isStereo:{type: "i", value: 0},
@@ -190,7 +179,7 @@ var finishInit = function(fShader){
       fov:{type:"f", value:90},
       // invGenerators:{type:"m4v", value:invGens},
       currentBoost:{type:"m4", value:g_currentBoost},
-      tetNum:{type:"i", value:0},
+      tetNum:{type:"i", value:g_tet_num},
       currentWeight:{type:"f", value:0.0},
       // stereoBoosts:{type:"m4v", value:g_stereoBoosts},
       // cellBoost:{type:"m4", value:g_cellBoost},
@@ -269,14 +258,10 @@ var animate = function(){
   stats.begin();
   // maxSteps = calcMaxSteps(fps.getFPS(), maxSteps);
   // g_material.uniforms.maxSteps.value = maxSteps;
-  
 
   g_controls.update();
   THREE.VRController.update();
-  
 
-  // console.log(g_currentBoost.elements);
-  // console.log(g_tet_num);
   g_effect.render(scene, camera, animate);
   stats.end();
 }

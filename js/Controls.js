@@ -96,6 +96,7 @@ THREE.Controls = function(done){
         if(deltaPosition !== undefined){
             deltaPosition.multiplyScalar(guiInfo.eToHScale);
             var m = translateByVector(deltaPosition);
+            // console.log(m);
             g_currentBoost.premultiply(m);
         }
 
@@ -122,6 +123,7 @@ THREE.Controls = function(done){
             m = new THREE.Matrix4().makeRotationFromQuaternion(deltaRotation.inverse());
             g_currentBoost.premultiply(m);
         }
+
 
         g_currentBoost.gramSchmidt(g_geometry);
     };

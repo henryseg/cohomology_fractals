@@ -1,10 +1,4 @@
 //-------------------------------------------------------
-// Global Variables
-//-------------------------------------------------------
-
-// var g_targetFPS = {value:27.5};
-
-//-------------------------------------------------------
 // UI Variables
 //-------------------------------------------------------
 
@@ -13,10 +7,6 @@ var surfaceController;
 
 // Inputs are from the UI parameterizations.
 // gI is the guiInfo object from initGui
-function updateUniformsFromUI()
-{
-
-}
 
 var resetPosition = function(){
   g_tet_num = 0;
@@ -30,16 +20,11 @@ var resetPosition = function(){
 //What we need to init our dat GUI
 var initGui = function(){
   guiInfo = { //Since dat gui can only modify object values we store variables here.
-    // sceneIndex: 0,
     triangulation: 'cPcbbbiht_12',
     surfaceIndex: 0,
     gradientIndex: 0,
     toggleUI: true,
-    // p:4,
-    // q:3,
-    // r:6,
-    // edgeThickness:1.5,
-    eToHScale:1.0,
+    eToHScale:2.0,
     maxDist:7.5,
     maxSteps:100,
     fov:90,
@@ -47,12 +32,7 @@ var initGui = function(){
     viewType:1,
     // toggleStereo:false,
     // rotateEyes:false,
-    // autoSteps:true,
-    // maxSteps: 31,
     // halfIpDistance: 0.03200000151991844,
-    // falloffModel: 1,
-    // renderShadows: 0,
-    // shadowSoftness: 0,
     screenshotWidth: g_screenShotResolution.x,
     screenshotHeight: g_screenShotResolution.y,
     resetPosition: function(){   
@@ -77,16 +57,13 @@ var initGui = function(){
   triangFolder.open();
   var triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Triangulation");
   surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface");
-  var gradientController = gui.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3}).name("Gradient");
-  var scaleController = gui.add(guiInfo, 'eToHScale',0.25,4.0).name("Euc to hyp scale");
+  var gradientController = gui.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4}).name("Gradient");
+  var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Speed");
   var distController = gui.add(guiInfo, 'maxDist',1.0,15.0).name("Screen dist");
-  var stepsController = gui.add(guiInfo, 'maxSteps', 1,300).name("Max iterations");
+  var stepsController = gui.add(guiInfo, 'maxSteps', 1,400).name("Max iterations");
   var contrastController = gui.add(guiInfo, 'contrast',-5.0,2.0).name("Contrast");
   var fovController = gui.add(guiInfo, 'fov',30,180).name("FOV");
   var viewTypeController = gui.add(guiInfo, 'viewType', {'Material': 0, 'Ideal': 1}).name("View type");
-  // var lightFalloffController = gui.add(guiInfo, 'falloffModel', {InverseLinear: 1, InverseSquare:2, InverseCube:3, Physical: 4, None:5}).name("Light Falloff");
-  // var shadowController = gui.add(guiInfo, 'renderShadows', {NoShadows: 0, Local: 1, Global: 2, LocalAndGlobal: 3}).name("Shadows");
-  // var softnessController = gui.add(guiInfo, 'shadowSoftness', 0,0.25).name("Shadow Softness");
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
   var screenshotFolder = gui.addFolder('Screenshot');
   var widthController = screenshotFolder.add(guiInfo, 'screenshotWidth');
@@ -96,9 +73,6 @@ var initGui = function(){
   // var debugFolder = gui.addFolder('Debug');
   // var stereoFolder = debugFolder.addFolder('Stereo');
   // var debugUIController = debugFolder.add(guiInfo, 'toggleUI').name("Toggle Debug UI");
-  // debugFolder.add(guiInfo, 'autoSteps').name("Auto Adjust Step Count");
-  // debugFolder.add(guiInfo, 'maxSteps', 0, 127).name("Set Step Count");
-  // debugFolder.add(g_targetFPS, 'value', 15, 90).name("Target FPS");
   // var switchToStereo = stereoFolder.add(guiInfo, 'toggleStereo').name("Toggle Stereo");
   // var rotateController = stereoFolder.add(guiInfo, 'rotateEyes').name("Rotate Eyes");
   // var pupilDistanceController = stereoFolder.add(guiInfo, 'halfIpDistance').name("Interpupiliary Distance");
@@ -161,7 +135,7 @@ var initGui = function(){
                                                    new THREE.Vector3(0.41568, 0.10588, 0.60392), 
                                                    new THREE.Vector3(0.0, 0.0, 0.0)];
     }
-    else{ // Green
+    else if(value == 3){ // Green
       g_material.uniforms.gradientThreshholds.value = [0.0, 0.25, 0.5, 0.70, 1.000001];
       g_material.uniforms.gradientColours.value = [new THREE.Vector3(1.0, 1.0, 1.0), 
                                                    new THREE.Vector3(0.67450, 0.84705, 0.6), 
@@ -169,39 +143,17 @@ var initGui = function(){
                                                    new THREE.Vector3(0.0, 0.41176, 0.34901), 
                                                    new THREE.Vector3(0.0, 0.0, 0.0)];
     }
+    else{ // Warwick
+      g_material.uniforms.gradientThreshholds.value = [0.0, 0.25, 0.4, 0.85, 1.000001];
+      g_material.uniforms.gradientColours.value = [new THREE.Vector3(1.0, 1.0, 1.0), 
+                                                   new THREE.Vector3(255/255, 194/255, 51/255), // warwick bright gold 
+                                                   // new THREE.Vector3(126/255, 203/255, 182/255), // warwick bright emerald green
+                                                   new THREE.Vector3(239/255, 64/255, 80/255),  // warwick bright ruby red
+                                                   // new THREE.Vector3(180/255, 21/255, 58/255),  // warwick ruby red
+                                                   new THREE.Vector3(81/255, 28/255, 108/255),  // warwick aubergine
+                                                   new THREE.Vector3(0.0, 0.0, 0.0)];
+    }
   });
-
-  // lightFalloffController.onFinishChange(function(value){
-  //   updateUniformsFromUI();
-  // });
-
-  // shadowController.onFinishChange(function(value){
-  //   if(value == 0){
-  //     g_material.uniforms.renderShadows.value[0] = false;
-  //     g_material.uniforms.renderShadows.value[1] = false;
-  //   }
-  //   else if(value == 1){ //Local
-  //     g_material.uniforms.renderShadows.value[0] = true;
-  //     g_material.uniforms.renderShadows.value[1] = false;
-  //   }
-  //   else if(value == 2){ //Global
-  //     g_material.uniforms.renderShadows.value[0] = false;
-  //     g_material.uniforms.renderShadows.value[1] = true;
-  //   }
-  //   else{ //Local and Global
-  //     g_material.uniforms.renderShadows.value[0] = true;
-  //     g_material.uniforms.renderShadows.value[1] = true;
-  //   }
-  // });
-
-  // softnessController.onChange(function(value){
-  //   if(value === 0.0){
-  //     g_material.uniforms.shadSoft.value = 128.0;
-  //   }
-  //   else{
-  //     g_material.uniforms.shadSoft.value = 1.0/value;
-  //   }
-  // });
 
   // pController.onFinishChange(function(value) {
 	 //  updateUniformsFromUI();
