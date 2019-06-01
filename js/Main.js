@@ -80,8 +80,8 @@ var init = function(){
     renderer = new THREE.WebGLRenderer({canvas: canvas, context: context});
     document.body.appendChild(renderer.domElement);
     g_screenResolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
-    g_screenShotResolution = new THREE.Vector2(12288,24576);  //12288,24576 //4096,4096 //window.innerWidth, window.innerHeight);
-    // g_screenShotResolution = new THREE.Vector2(4096,8192);  //12288,24576 //4096,4096 //window.innerWidth, window.innerHeight);
+    // g_screenShotResolution = new THREE.Vector2(12288,24576);  //12288,24576 //4096,4096 //window.innerWidth, window.innerHeight);
+    g_screenShotResolution = new THREE.Vector2(4096,4096);  
     g_effect = new THREE.VREffect(renderer);
     camera = new THREE.OrthographicCamera(-1,1,1,-1,1/Math.pow(2,53),1);
     g_controls = new THREE.Controls();
