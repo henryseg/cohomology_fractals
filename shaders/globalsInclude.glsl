@@ -31,6 +31,7 @@ uniform float currentWeight;
 // uniform mat4 invCellBoost;
 uniform int maxSteps;
 uniform float maxDist;
+uniform float edgeThickness;
 uniform float contrast;
 uniform int viewType;
 uniform int multiScreenShot;

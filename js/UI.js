@@ -30,6 +30,7 @@ var initGui = function(){
     fov:90,
     contrast:-1.2,
     viewType:1,
+    edgeThickness:0.0,
     // toggleStereo:false,
     // rotateEyes:false,
     // halfIpDistance: 0.03200000151991844,
@@ -64,6 +65,7 @@ var initGui = function(){
   var contrastController = gui.add(guiInfo, 'contrast',-5.0,2.0).name("Contrast");
   var fovController = gui.add(guiInfo, 'fov',30,180).name("FOV");
   var viewTypeController = gui.add(guiInfo, 'viewType', {'Material': 0, 'Ideal': 1}).name("View type");
+  var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.2).name("Edge thickness");
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
   var screenshotFolder = gui.addFolder('Screenshot');
   var widthController = screenshotFolder.add(guiInfo, 'screenshotWidth');
@@ -193,6 +195,10 @@ var initGui = function(){
 
   viewTypeController.onChange(function(value){
     g_material.uniforms.viewType.value = value;
+  });
+
+  edgeThicknessController.onChange(function(value){
+    g_material.uniforms.edgeThickness.value = Math.pow(Math.sinh(value), 2.0); 
   });
 
   // debugUIController.onFinishChange(function(value){

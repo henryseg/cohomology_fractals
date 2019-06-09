@@ -42,6 +42,7 @@ var renderer;
 var camera;
 var maxSteps = 100;
 var maxDist = 7.5;
+var edgeThickness = 0.0;
 // var textFPS;
 var time;
 var stats;
@@ -186,6 +187,7 @@ var finishInit = function(fShader){
       // invCellBoost:{type:"m4", value:g_invCellBoost},
       maxSteps:{type:"i", value:maxSteps},
       maxDist:{type:"f", value:7.5},
+      edgeThickness:{type:"f", value:0.0},
       contrast:{type:"f", value:Math.exp(-1.2)},
       viewType:{type:"i", value:1},
       multiScreenShot:{type:"i", value:0},

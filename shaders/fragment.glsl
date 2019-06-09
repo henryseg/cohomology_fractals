@@ -20,6 +20,31 @@
     return v*R31_norm_inv(v);
   }
 
+float geodesicParameterPlanes(vec4 samplePoint, vec4 dualPoint1, vec4 dualPoint2){
+  // "distance" from a geodesic defined by two (assumed perpendicular) geodesic planes, this is not quite distance, need to asinh(sqrt( result ))
+  float dot1 = -R31_dot(samplePoint, dualPoint1);
+  vec4 dualPointPerp = R31_normalise(dualPoint2 - R31_dot(dualPoint1, dualPoint2) * dualPoint1); // should be precalculated if this is a main feature
+  float dot2 = -R31_dot(samplePoint, dualPointPerp);
+  // float dot3 = -R31_dot(dualPoint1, dualPoint2);
+  return dot1*dot1 + dot2*dot2;
+  // return dot1*dot1 * (1.0 + dot3*dot3) + dot2*dot2 + 2.0*dot1*dot2*dot3;
+}
+
+float triangleBdryParam(vec4 samplePoint, int tetNum, int exit_face){
+  vec4 exit_dual_point = planes[4*tetNum + exit_face];
+  float smallest_p = 100000000.0;
+  for(int face=0; face<4; face++){
+      if(face != exit_face){  // find p when we hit that face
+          int index = 4*tetNum + face;
+          float new_p = geodesicParameterPlanes(samplePoint, exit_dual_point, planes[index]);
+          if(new_p < smallest_p){
+            smallest_p = new_p;
+          }   
+      }
+  }
+  return smallest_p;
+}
+
 /// --- Ray-trace code --- ///
 
   float hyp_dist(vec4 u, vec4 v){
@@ -73,6 +98,11 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
     vec4 new_dir;
     for(int i=0; i<maxSteps; i++){
       new_pt = ray_trace_through_hyperboloid_tet(init_pt, init_dir, tetNum, entry_face, exit_face);
+      if(edgeThickness > 0.0001){
+        if(triangleBdryParam(new_pt, tetNum, exit_face) < edgeThickness){   // in fact pow(sinh(radius in hyperbolic units),2.0)
+          return total_face_weight;
+        }
+      }
       dist_moved = hyp_dist(init_pt, new_pt);
       dist_to_go -= dist_moved;
       if (dist_to_go <= 0.0){ break; }
