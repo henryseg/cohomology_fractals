@@ -92,20 +92,17 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
     int exit_face = -1;
     float total_face_weight = 0.0;
     vec4 new_pt;
-    float dist_moved;
     int index;
     mat4 tsfm;
     vec4 new_dir;
     for(int i=0; i<maxSteps; i++){
       new_pt = ray_trace_through_hyperboloid_tet(init_pt, init_dir, tetNum, entry_face, exit_face);
-      if(edgeThickness > 0.0001){
-        if(triangleBdryParam(new_pt, tetNum, exit_face) < edgeThickness){   // in fact pow(sinh(radius in hyperbolic units),2.0)
-          return total_face_weight;
-        }
-      }
-      dist_moved = hyp_dist(init_pt, new_pt);
-      dist_to_go -= dist_moved;
+      dist_to_go -= hyp_dist(init_pt, new_pt);
       if (dist_to_go <= 0.0){ break; }
+      if(edgeThickness > 0.00001){
+        if(triangleBdryParam(new_pt, tetNum, exit_face) < edgeThickness){ break; }}
+        // in fact pow(sinh(radius in hyperbolic units),2.0). However, sinh^2 is monotonic for 
+        // positive values so we get correct behaviour by comparing without the sinh^2. 
       index = 4*tetNum + exit_face;
       total_face_weight += weights[ index ];
       entry_face = entering_face_nums[ index ];
@@ -116,7 +113,8 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
       init_pt = new_pt * tsfm;  
       init_dir = R31_normalise( new_dir * tsfm ); 
     }
-    return total_face_weight;
+    if(viewMode == 0){ return total_face_weight; }
+    else{ return 0.5*maxDist - dist_to_go; }
 }
 
 /// --- Graph-trace code --- ///
@@ -186,18 +184,18 @@ vec4 get_ray_dir(vec2 xy){
 void main(){
   vec4 init_pt;
   vec4 init_dir;
-  float weight;
+  float weight = 0.0;
   vec2 xy = (gl_FragCoord.xy - 0.5*screenResolution.xy)/screenResolution.x;
   if(multiScreenShot == 1){  // Return multiple 4096x4096 screenshots that can be combined in, e.g. Photoshop.
     // Here screenResolution is really tileResolution;
     xy = (xy + tile - 0.5*(numTiles - vec2(1.0,1.0))) / numTiles.x;
   }
-  if(viewType == 0){ // material
+  if(perspectiveType == 0){ // material
     init_pt = vec4(0.0,0.0,0.0,1.0);
     init_dir = get_ray_dir(xy);
     init_pt *= currentBoost;
     init_dir *= currentBoost; 
-    weight = currentWeight + ray_trace(init_pt, init_dir, maxDist, tetNum);
+    weight = ray_trace(init_pt, init_dir, maxDist, tetNum);
   }
   else{ // ideal
     float foo = 0.5*dot(xy, xy);
@@ -207,10 +205,16 @@ void main(){
     init_dir *= currentBoost; 
     mat4 tsfm = mat4(1.0);
     int currentTetNum = tetNum;  // gets modified inside graph_trace
-    weight = currentWeight + graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt
-    // init_pt *= tsfm;  // the point gets moved back in graph_trace
-    init_dir *= tsfm;  // move the direction back to here
+    if(viewMode == 0){
+      weight = graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt
+      // init_pt *= tsfm;  // the point gets moved back in graph_trace
+      init_dir *= tsfm;  // move the direction back to here
+    }
     weight += ray_trace(init_pt, init_dir, maxDist, currentTetNum);
+  }
+
+  if(viewMode == 0){
+    weight += currentWeight;
   }
 
   weight = contrast * weight;
