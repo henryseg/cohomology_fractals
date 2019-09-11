@@ -81,7 +81,7 @@ var init = function(){
     renderer = new THREE.WebGLRenderer({canvas: canvas, context: context});
     document.body.appendChild(renderer.domElement);
     g_screenResolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
-    // g_screenShotResolution = new THREE.Vector2(12288,24576);  //12288,24576 //4096,4096 //window.innerWidth, window.innerHeight);
+    // g_screenShotResolution = new THREE.Vector2(12288,24576);  //12288,24576 //4096,4096 //window.innerWidth, window.innerHeight); 
     g_screenShotResolution = new THREE.Vector2(4096,4096);  
     g_effect = new THREE.VREffect(renderer);
     camera = new THREE.OrthographicCamera(-1,1,1,-1,1/Math.pow(2,53),1);
@@ -90,6 +90,10 @@ var init = function(){
     g_controllerBoosts.push(new THREE.Matrix4());
     g_controllerBoosts.push(new THREE.Matrix4());
     g_currentBoost = new THREE.Matrix4(); // boost for camera relative to tetrahedron
+
+    // Nice initial position for cPcbbbiht_12
+    // var temp = new THREE.Matrix4().makeRotationZ(Math.PI + Math.PI/3.0);
+    // g_currentBoost.multiply(temp);
 
     // Nice initial position for gLLAQbecdfffhhnkqnc_120012:
     // var temp = parabolicBy2DVector(new THREE.Vector2(0.5,0)).premultiply(new THREE.Matrix4().makeRotationZ(Math.PI + Math.PI/3.5));
@@ -112,10 +116,14 @@ var mainFrag;
 var loadStuff = function(){
   var loader2 = new THREE.FileLoader();
     loader2.load('data/cannon_thurston.json',function(data){
+    // loader2.load('data/cannon_thurston_data_closed.json',function(data){
         cannon_thurston_data = JSON.parse(data);
+        ////// Default cusped
         var triangulation = 'cPcbbbiht_12';
         // var triangulation = 'gLLAQbecdfffhhnkqnc_120012';
         // var triangulation = 'gLMzQbcdefffhhhhhit_122112';
+        ////// Default closed 
+        // var triangulation = 'eLPkbcdddhrrcv_1200_1_-3'
         var surfaceIndex = 0;
         
         loadShaders();

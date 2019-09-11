@@ -63,7 +63,7 @@ var initGui = function(){
   var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Speed");
   var distController = gui.add(guiInfo, 'maxDist',1.0,15.0).name("Screen dist");
   var stepsController = gui.add(guiInfo, 'maxSteps', 1,400).name("Max iterations");
-  var contrastController = gui.add(guiInfo, 'contrast',-5.0,2.0).name("Contrast");
+  var contrastController = gui.add(guiInfo, 'contrast',-5.0,4.0).name("Contrast");
   var fovController = gui.add(guiInfo, 'fov',30,180).name("FOV");
   var perspectiveTypeController = gui.add(guiInfo, 'perspectiveType', {'Material': 0, 'Ideal': 1}).name("Perspective type");
   var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.2).name("Edge thickness");
@@ -147,7 +147,7 @@ var initGui = function(){
                                                    new THREE.Vector3(0.0, 0.41176, 0.34901), 
                                                    new THREE.Vector3(0.0, 0.0, 0.0)];
     }
-    else{ // Warwick
+    else if(value == 4){ // Warwick
       g_material.uniforms.gradientThreshholds.value = [0.0, 0.25, 0.4, 0.85, 1.000001];
       g_material.uniforms.gradientColours.value = [new THREE.Vector3(1.0, 1.0, 1.0), 
                                                    new THREE.Vector3(255/255, 194/255, 51/255), // warwick bright gold 
