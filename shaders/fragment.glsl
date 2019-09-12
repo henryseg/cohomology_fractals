@@ -113,8 +113,9 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
       init_pt = new_pt * tsfm;  
       init_dir = R31_normalise( new_dir * tsfm ); 
     }
-    if(viewMode == 0){ return total_face_weight; }
-    else{ return 0.5*maxDist - dist_to_go; }
+    if(viewMode == 0){ return total_face_weight; } // Cannon-Thurston
+    else if(viewMode == 1){ return 0.5*maxDist - dist_to_go; } // Distance
+    else{ return float(tetNum);}
 }
 
 /// --- Graph-trace code --- ///
@@ -200,11 +201,11 @@ float get_signed_count(vec2 xy){
     init_dir *= currentBoost; 
     mat4 tsfm = mat4(1.0);
     int currentTetNum = tetNum;  // gets modified inside graph_trace
-    if(viewMode == 0){
-      weight = graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt
-      // init_pt *= tsfm;  // the point gets moved back in graph_trace
-      init_dir *= tsfm;  // move the direction back to here
-    }
+
+    weight = graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt
+    // init_pt *= tsfm;  // the point gets moved back in graph_trace
+    init_dir *= tsfm;  // move the direction back to here
+    if(viewMode != 0){ weight = 0.0; } // the other modes don't have a cumulative count from moving to the correct tetrahedron
     weight += ray_trace(init_pt, init_dir, maxDist, currentTetNum);
   }
 

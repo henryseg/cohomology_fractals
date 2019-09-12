@@ -69,7 +69,7 @@ var initGui = function(){
   var fovController = gui.add(guiInfo, 'fov',30,180).name("FOV");
   var perspectiveTypeController = gui.add(guiInfo, 'perspectiveType', {'Material': 0, 'Ideal': 1}).name("Perspective type");
   var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.2).name("Edge thickness");
-  var viewModeController = gui.add(guiInfo, 'viewMode', {'Cannon-Thurston': 0, 'Distance': 1}).name("View mode");
+  var viewModeController = gui.add(guiInfo, 'viewMode', {'Cannon-Thurston': 0, 'Distance': 1, 'Tetrahedron num': 2}).name("View mode");
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
   var screenshotFolder = gui.addFolder('Screenshot');
   var widthController = screenshotFolder.add(guiInfo, 'screenshotWidth');
