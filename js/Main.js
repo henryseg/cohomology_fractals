@@ -116,7 +116,7 @@ var mainFrag;
 
 var loadStuff = function(){
   var loader2 = new THREE.FileLoader();
-    loader2.load('data/cannon_thurston.json',function(data){
+    loader2.load('data/cannon_thurston_data_cusped.json',function(data){
     // loader2.load('data/cannon_thurston_data_closed.json',function(data){
         cannon_thurston_data = JSON.parse(data);
         ////// Default cusped
