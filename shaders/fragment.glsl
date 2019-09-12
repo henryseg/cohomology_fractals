@@ -181,15 +181,10 @@ vec4 get_ray_dir(vec2 xy){
     return p;
 }
 
-void main(){
+float get_signed_count(vec2 xy){
   vec4 init_pt;
   vec4 init_dir;
   float weight = 0.0;
-  vec2 xy = (gl_FragCoord.xy - 0.5*screenResolution.xy)/screenResolution.x;
-  if(multiScreenShot == 1){  // Return multiple 4096x4096 screenshots that can be combined in, e.g. Photoshop.
-    // Here screenResolution is really tileResolution;
-    xy = (xy + tile - 0.5*(numTiles - vec2(1.0,1.0))) / numTiles.x;
-  }
   if(perspectiveType == 0){ // material
     init_pt = vec4(0.0,0.0,0.0,1.0);
     init_dir = get_ray_dir(xy);
@@ -213,9 +208,26 @@ void main(){
     weight += ray_trace(init_pt, init_dir, maxDist, currentTetNum);
   }
 
-  if(viewMode == 0){
+  if(viewMode == 0){ // Cannon-Thurston
     weight += currentWeight;
   }
+  return weight;
+}
+
+void main(){
+  vec2 xy = (gl_FragCoord.xy - 0.5*screenResolution.xy)/screenResolution.x;
+  if(multiScreenShot == 1){  // Return multiple 4096x4096 screenshots that can be combined in, e.g. Photoshop.
+    // Here screenResolution is really tileResolution;
+    xy = (xy + tile - 0.5*(numTiles - vec2(1.0,1.0))) / numTiles.x;
+  }
+  float total_weight = 0.0;
+  for(int i=0; i<subpixelCount; i++){
+    for(int j=0; j<subpixelCount; j++){
+      vec2 offset = ( (float(1+2*i), float(1+2*j))/float(2*subpixelCount) - vec2(0.5,0.5) ) / screenResolution.x;
+      total_weight += get_signed_count(xy + offset);
+    }
+  }
+  float weight = total_weight/float(subpixelCount*subpixelCount); // average over all subpixels
 
   weight = contrast * weight;
   weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  //faster than atan, similar

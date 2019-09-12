@@ -26,6 +26,7 @@ var initGui = function(){
     toggleUI: true,
     eToHScale:2.0,
     maxDist:7.5,
+    subpixelCount:1,
     maxSteps:100,
     fov:90,
     contrast:-1.2,
@@ -62,6 +63,7 @@ var initGui = function(){
   var gradientController = gui.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4}).name("Gradient");
   var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Speed");
   var distController = gui.add(guiInfo, 'maxDist',1.0,15.0).name("Screen dist");
+  var subpixelCountController = gui.add(guiInfo, 'subpixelCount', {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5}).name("Subpixel count");
   var stepsController = gui.add(guiInfo, 'maxSteps', 1,400).name("Max iterations");
   var contrastController = gui.add(guiInfo, 'contrast',-5.0,4.0).name("Contrast");
   var fovController = gui.add(guiInfo, 'fov',30,180).name("FOV");
@@ -181,6 +183,10 @@ var initGui = function(){
 
   distController.onChange(function(value) {
     g_material.uniforms.maxDist.value = value;
+  });
+
+  subpixelCountController.onChange(function(value) {
+    g_material.uniforms.subpixelCount.value = value;
   });
 
   stepsController.onChange(function(value) {
