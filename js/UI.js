@@ -20,8 +20,8 @@ var resetPosition = function(){
 //What we need to init our dat GUI
 var initGui = function(){
   guiInfo = { //Since dat gui can only modify object values we store variables here.
-    triangulation: 'cPcbbbiht_12',
-    surfaceIndex: 0,
+    triangulation: g_triangulation,
+    surfaceIndex: g_surfaceIndex,
     gradientIndex: 0,
     toggleUI: true,
     eToHScale:2.0,

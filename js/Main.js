@@ -32,6 +32,8 @@ var gradientColours = [new THREE.Vector3(1.0, 1.0, 1.0),  // cool
                        new THREE.Vector3(0.25882, 0.70196, 0.83529), 
                        new THREE.Vector3(0.10196, 0.13725, 0.49412), 
                        new THREE.Vector3(0.0, 0.0, 0.0)];
+var g_triangulation;
+var g_surfaceIndex;
 
 //-------------------------------------------------------
 // Scene Variables
@@ -120,15 +122,15 @@ var loadStuff = function(){
     // loader2.load('data/cannon_thurston_data_closed.json',function(data){
         cannon_thurston_data = JSON.parse(data);
         ////// Default cusped
-        var triangulation = 'cPcbbbiht_12';
-        // var triangulation = 'gLLAQbecdfffhhnkqnc_120012';
-        // var triangulation = 'gLMzQbcdefffhhhhhit_122112';
+        // g_triangulation = 'cPcbbbiht_12';
+        g_triangulation = 'gLLAQbecdfffhhnkqnc_120012';
+        // g_triangulation = 'gLMzQbcdefffhhhhhit_122112';
         ////// Default closed 
-        // var triangulation = 'eLPkbcdddhrrcv_1200_1_-3'
-        var surfaceIndex = 0;
+        // g_triangulation = 'eLPkbcdddhrrcv_1200_1_-3'
+        g_surfaceIndex = 0;
         
         loadShaders();
-        setUpTriangulationAndSurface(triangulation, surfaceIndex);
+        setUpTriangulationAndSurface(g_triangulation, g_surfaceIndex);
         //Setup dat GUI --- SceneManipulator.js
         initGui();
     });
