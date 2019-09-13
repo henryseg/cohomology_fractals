@@ -4,9 +4,19 @@
 
 var guiInfo;
 var surfaceController;
+var triangulationController;
+var triangulationDict;
 
 // Inputs are from the UI parameterizations.
 // gI is the guiInfo object from initGui
+
+var sendGluingData = function(){
+  g_material.uniforms.planes.value = planes;  
+  g_material.uniforms.otherTetNums.value = other_tet_nums;
+  g_material.uniforms.entering_face_nums.value = entering_face_nums;
+  g_material.uniforms.weights.value = weights;
+  g_material.uniforms.SO31tsfms.value = SO31tsfms;
+}
 
 var resetPosition = function(){
   g_tet_num = 0;
@@ -17,21 +27,31 @@ var resetPosition = function(){
   g_controllerBoosts[0].identity();
 }
 
+var setUpTriangDict = function(){
+  var triangulationKeys = Object.keys(g_census_data[g_census_index]);
+  triangulationKeys.sort();
+  triangulationDict = {};
+  for (var i = 0; i < triangulationKeys.length; i++) {
+    triangulationDict[triangulationKeys[i]] = triangulationKeys[i];
+  };
+}
+
 //What we need to init our dat GUI
 var initGui = function(){
   guiInfo = { //Since dat gui can only modify object values we store variables here.
+    censusIndex: g_census_index,
     triangulation: g_triangulation,
     surfaceIndex: g_surfaceIndex,
     gradientIndex: 0,
     toggleUI: true,
     eToHScale:2.0,
     maxDist:7.5,
-    subpixelCount:1,
     maxSteps:100,
     fov:90,
     contrast:-1.2,
     perspectiveType:1,
     viewMode:0,
+    subpixelCount:1,
     edgeThickness:0.0,
     // toggleStereo:false,
     // rotateEyes:false,
@@ -46,30 +66,26 @@ var initGui = function(){
     }
   };
 
-  var triangulationKeys = Object.keys(cannon_thurston_data);
-  triangulationKeys.sort();
-  triangulationDict = {};
-  for (var i = 0; i < triangulationKeys.length; i++) {
-    triangulationDict[triangulationKeys[i]] = triangulationKeys[i];
-  };
+  setUpTriangDict();
 
   var gui = new dat.GUI();
   gui.close();
   //scene settings ---------------------------------
+  var censusController = gui.add(guiInfo, 'censusIndex', {'Cusped':0, 'Closed':1}).name("Census");
   var triangFolder = gui.addFolder('Triangulation and surface');
   triangFolder.open();
-  var triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Triangulation");
+  triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Triangulation");
   surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface");
   var gradientController = gui.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4}).name("Gradient");
   var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Speed");
   var distController = gui.add(guiInfo, 'maxDist',1.0,15.0).name("Screen dist");
-  var subpixelCountController = gui.add(guiInfo, 'subpixelCount', {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5}).name("Subpixel count");
   var stepsController = gui.add(guiInfo, 'maxSteps', 1,400).name("Max iterations");
   var contrastController = gui.add(guiInfo, 'contrast',-5.0,4.0).name("Contrast");
   var fovController = gui.add(guiInfo, 'fov',30,180).name("FOV");
   var perspectiveTypeController = gui.add(guiInfo, 'perspectiveType', {'Material': 0, 'Ideal': 1}).name("Perspective type");
   var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.2).name("Edge thickness");
   var viewModeController = gui.add(guiInfo, 'viewMode', {'Cannon-Thurston': 0, 'Distance': 1, 'Tetrahedron num': 2}).name("View mode");
+  var subpixelCountController = gui.add(guiInfo, 'subpixelCount', {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5}).name("Subpixel count");
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
   var screenshotFolder = gui.addFolder('Screenshot');
   var widthController = screenshotFolder.add(guiInfo, 'screenshotWidth');
@@ -94,26 +110,51 @@ var initGui = function(){
     g_screenShotResolution.y = value;
   });
 
+  censusController.onFinishChange(function(value){
+    g_census_index = value;
+    setUpTriangDict();
+    resetPosition();
+    var triangulationKeys = Object.keys(g_census_data[g_census_index]);
+    triangulationKeys.sort();
+    setUpTriangulationAndSurface(triangulationKeys[0], 0);
+    sendGluingData();
+    // seems like we have to recursively renew all of the controller ui?
+    triangFolder.remove(surfaceController); // renew surface controller ui
+    triangFolder.remove(triangulationController);
+    triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Triangulation");
+    surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface");
+    triangulationController.onFinishChange(function(value){ // renew triangulation controller ui
+      resetPosition();
+      setUpTriangulationAndSurface(value, 0);
+      sendGluingData();
+      triangFolder.remove(surfaceController); // renew surface controller ui
+      surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface"); 
+      surfaceController.onFinishChange(function(value){  
+        setUpTriangulationAndSurface(guiInfo.triangulation, value);
+        sendGluingData();
+      });
+    });
+    surfaceController.onFinishChange(function(value){  // renew surface controller ui
+      setUpTriangulationAndSurface(guiInfo.triangulation, value);
+      sendGluingData();
+    });
+  });
+
   triangulationController.onFinishChange(function(value){
     resetPosition();
     setUpTriangulationAndSurface(value, 0);
-    g_material.uniforms.planes.value = planes;  
-    g_material.uniforms.otherTetNums.value = other_tet_nums;
-    g_material.uniforms.entering_face_nums.value = entering_face_nums;
-    g_material.uniforms.weights.value = weights;
-    g_material.uniforms.SO31tsfms.value = SO31tsfms;
-
+    sendGluingData();
     triangFolder.remove(surfaceController); // renew surface controller ui
     surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface"); 
     surfaceController.onFinishChange(function(value){  
       setUpTriangulationAndSurface(guiInfo.triangulation, value);
-      g_material.uniforms.planes.value = planes;  
-      g_material.uniforms.otherTetNums.value = other_tet_nums;
-      g_material.uniforms.entering_face_nums.value = entering_face_nums;
-      g_material.uniforms.weights.value = weights;
-      g_material.uniforms.SO31tsfms.value = SO31tsfms;
+      sendGluingData();
     });
+  });
 
+  surfaceController.onFinishChange(function(value){  
+    setUpTriangulationAndSurface(guiInfo.triangulation, value);
+    sendGluingData();
   });
 
   gradientController.onFinishChange(function(value){
@@ -185,10 +226,6 @@ var initGui = function(){
     g_material.uniforms.maxDist.value = value;
   });
 
-  subpixelCountController.onChange(function(value) {
-    g_material.uniforms.subpixelCount.value = value;
-  });
-
   stepsController.onChange(function(value) {
     g_material.uniforms.maxSteps.value = value;
   });
@@ -211,6 +248,10 @@ var initGui = function(){
 
   viewModeController.onChange(function(value){
     g_material.uniforms.viewMode.value = value;
+  });
+
+  subpixelCountController.onChange(function(value) {
+    g_material.uniforms.subpixelCount.value = value;
   });
 
   // debugUIController.onFinishChange(function(value){

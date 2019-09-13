@@ -17,7 +17,8 @@ var g_screenShotResolution;
 var g_controllerBoosts = [];
 var g_controllerDualPoints = [];
 
-var cannon_thurston_data;
+var g_census_data;
+var g_census_index;
 var g_maxNumTet = 6;
 var triangIntegerWeights = {};
 var planes; 
@@ -34,6 +35,7 @@ var gradientColours = [new THREE.Vector3(1.0, 1.0, 1.0),  // cool
                        new THREE.Vector3(0.0, 0.0, 0.0)];
 var g_triangulation;
 var g_surfaceIndex;
+var g_census = 0;
 
 //-------------------------------------------------------
 // Scene Variables
@@ -118,9 +120,13 @@ var mainFrag;
 
 var loadStuff = function(){
   var loader2 = new THREE.FileLoader();
-    loader2.load('data/cannon_thurston_data_cusped.json',function(data){
-    // loader2.load('data/cannon_thurston_data_closed.json',function(data){
-        cannon_thurston_data = JSON.parse(data);
+  loader2.load('data/cannon_thurston_data_cusped.json',function(data){
+    var cannon_thurston_data_cusped = JSON.parse(data);
+    var loader3 = new THREE.FileLoader();
+    loader3.load('data/cannon_thurston_data_closed.json',function(data){
+        var cannon_thurston_data_closed = JSON.parse(data);
+        g_census_data = [cannon_thurston_data_cusped, cannon_thurston_data_closed];
+        g_census_index = 0;
         ////// Default cusped
         // g_triangulation = 'cPcbbbiht_12';
         g_triangulation = 'gLLAQbecdfffhhnkqnc_120012';
@@ -134,10 +140,11 @@ var loadStuff = function(){
         //Setup dat GUI --- SceneManipulator.js
         initGui();
     });
+  });
 }
 
 var setUpTriangulationAndSurface = function(triangulation, surfaceIndex){
-  var triang_data = cannon_thurston_data[triangulation];
+  var triang_data = g_census_data[g_census_index][triangulation];
   triangIntegerWeights = {};
   for(i=0;i<triang_data.length;i++){
     triangIntegerWeights[triang_data[i][5].toString()] = i;
