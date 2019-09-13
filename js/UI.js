@@ -116,7 +116,8 @@ var initGui = function(){
     resetPosition();
     var triangulationKeys = Object.keys(g_census_data[g_census_index]);
     triangulationKeys.sort();
-    setUpTriangulationAndSurface(triangulationKeys[0], 0);
+    guiInfo.triangulation = triangulationKeys[0];
+    setUpTriangulationAndSurface(guiInfo.triangulation, 0);
     sendGluingData();
     // seems like we have to recursively renew all of the controller ui?
     triangFolder.remove(surfaceController); // renew surface controller ui
