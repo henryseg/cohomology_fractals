@@ -36,6 +36,11 @@ var setUpTriangDict = function(){
   };
 }
 
+var stripFillingInfo = function(s){
+    var n = s.indexOf('_(');
+    return s.substring(0, n != -1 ? n : s.length);
+}
+
 //What we need to init our dat GUI
 var initGui = function(){
   guiInfo = { //Since dat gui can only modify object values we store variables here.
@@ -116,7 +121,24 @@ var initGui = function(){
     resetPosition();
     var triangulationKeys = Object.keys(g_census_data[g_census_index]);
     triangulationKeys.sort();
-    guiInfo.triangulation = triangulationKeys[0];
+    //see if the same triangulation is in the other census
+    if(g_census_index == 0){  // we just came from the closed census
+      var strippedName = stripFillingInfo(guiInfo.triangulation);
+      guiInfo.triangulation = strippedName;
+    }
+    else { // we just came from the cusped census
+      var notFound = true;
+      for(i = 0; i<triangulationKeys.length; i++){
+        if( stripFillingInfo(triangulationKeys[i]) == guiInfo.triangulation){
+          guiInfo.triangulation = triangulationKeys[i];
+          notFound = false;
+          break;
+        }
+      }
+      if(notFound){
+        guiInfo.triangulation = triangulationKeys[0];
+      }
+    }
     setUpTriangulationAndSurface(guiInfo.triangulation, 0);
     sendGluingData();
     // seems like we have to recursively renew all of the controller ui?

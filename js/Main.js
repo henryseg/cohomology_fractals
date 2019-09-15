@@ -19,7 +19,7 @@ var g_controllerDualPoints = [];
 
 var g_census_data;
 var g_census_index;
-var g_maxNumTet = 6;
+var g_maxNumTet = 9;
 var triangIntegerWeights = {};
 var planes; 
 var other_tet_nums; 
@@ -119,29 +119,30 @@ var globalsFrag;
 var mainFrag;
 
 var loadStuff = function(){
+  g_census_data = [0,0]; // dummy place holders, will get replaced as we load them
+  g_census_index = 0;
+  ////// Default cusped
+  g_triangulation = 'cPcbbbiht_12';
+  // g_triangulation = 'gLLAQbecdfffhhnkqnc_120012';
+  // g_triangulation = 'gLMzQbcdefffhhhhhit_122112';
+  g_surfaceIndex = 0;
+
+  // asynchronously load the closed census
+  var loader3 = new THREE.FileLoader();
+    loader3.load('data/cannon_thurston_data_closed.json',function(data){
+    g_census_data[1] = JSON.parse(data); // we only need the closed census data when the user changes census in the UI
+  });
+        
+  // and asynchronously load the default census
   var loader2 = new THREE.FileLoader();
   loader2.load('data/cannon_thurston_data_cusped.json',function(data){
-    var cannon_thurston_data_cusped = JSON.parse(data);
-    var loader3 = new THREE.FileLoader();
-    loader3.load('data/cannon_thurston_data_closed.json',function(data){
-        var cannon_thurston_data_closed = JSON.parse(data);
-        g_census_data = [cannon_thurston_data_cusped, cannon_thurston_data_closed];
-        g_census_index = 0;
-        ////// Default cusped
-        // g_triangulation = 'cPcbbbiht_12';
-        g_triangulation = 'gLLAQbecdfffhhnkqnc_120012';
-        // g_triangulation = 'gLMzQbcdefffhhhhhit_122112';
-        ////// Default closed 
-        // g_triangulation = 'eLPkbcdddhrrcv_1200_1_-3'
-        g_surfaceIndex = 0;
-        
-        loadShaders();
-        setUpTriangulationAndSurface(g_triangulation, g_surfaceIndex);
-        //Setup dat GUI --- SceneManipulator.js
-        initGui();
-    });
+    g_census_data[0] = JSON.parse(data);    
+    loadShaders();  // can only set up everything else once we have the default data loaded
+    setUpTriangulationAndSurface(g_triangulation, g_surfaceIndex);
+    //Setup dat GUI --- SceneManipulator.js
+    initGui();
   });
-}
+} 
 
 var setUpTriangulationAndSurface = function(triangulation, surfaceIndex){
   var triang_data = g_census_data[g_census_index][triangulation];
