@@ -139,7 +139,7 @@ var initGui = function(){
         guiInfo.triangulation = triangulationKeys[0];
       }
     }
-    setUpTriangulationAndSurface(guiInfo.triangulation, 0);
+    setUpTriangulationAndSurface(guiInfo.triangulation, guiInfo.surfaceIndex);
     sendGluingData();
     // seems like we have to recursively renew all of the controller ui?
     triangFolder.remove(surfaceController); // renew surface controller ui

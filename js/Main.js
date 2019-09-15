@@ -19,7 +19,7 @@ var g_controllerDualPoints = [];
 
 var g_census_data;
 var g_census_index;
-var g_maxNumTet = 9;
+var g_maxNumTet = 8;
 var triangIntegerWeights = {};
 var planes; 
 var other_tet_nums; 
@@ -129,13 +129,13 @@ var loadStuff = function(){
 
   // asynchronously load the closed census
   var loader3 = new THREE.FileLoader();
-    loader3.load('data/cannon_thurston_data_closed.json',function(data){
+    loader3.load('data/cannon_thurston_data_closed_374.json',function(data){
     g_census_data[1] = JSON.parse(data); // we only need the closed census data when the user changes census in the UI
   });
         
   // and asynchronously load the default census
   var loader2 = new THREE.FileLoader();
-  loader2.load('data/cannon_thurston_data_cusped.json',function(data){
+  loader2.load('data/cannon_thurston_data_cusped_374.json',function(data){
     g_census_data[0] = JSON.parse(data);    
     loadShaders();  // can only set up everything else once we have the default data loaded
     setUpTriangulationAndSurface(g_triangulation, g_surfaceIndex);
