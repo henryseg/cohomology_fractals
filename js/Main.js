@@ -287,7 +287,6 @@ var animate = function(){
 
   g_effect.render(scene, camera, animate);
   stats.end();
-  console.log(maxDist);
 }
 
 //-------------------------------------------------------
