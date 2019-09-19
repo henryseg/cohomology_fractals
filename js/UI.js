@@ -76,7 +76,7 @@ var initGui = function(){
   var gui = new dat.GUI();
   gui.close();
   //scene settings ---------------------------------
-  var censusController = gui.add(guiInfo, 'censusIndex', {'Cusped':0, 'Closed':1}).name("Census");
+  var censusController = gui.add(guiInfo, 'censusIndex', {'Cusped':0, 'Closed':1, 'Cusped cool exs':2, 'Closed cool exs':3}).name("Census");
   var triangFolder = gui.addFolder('Triangulation and surface');
   triangFolder.open();
   triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Triangulation");
@@ -122,23 +122,23 @@ var initGui = function(){
     var triangulationKeys = Object.keys(g_census_data[g_census_index]);
     triangulationKeys.sort();
     //see if the same triangulation is in the other census
-    if(g_census_index == 0){  // we just came from the closed census
+    if(g_census_index%2 == 0){  // we are going to a cusped census
       var strippedName = stripFillingInfo(guiInfo.triangulation);
-      guiInfo.triangulation = strippedName;
+      if(triangulationKeys.indexOf(strippedName) >= 0) {guiInfo.triangulation = strippedName;}
+      else {guiInfo.triangulation = triangulationKeys[0];}
     }
-    else { // we just came from the cusped census
+    else { // we are going to a closed census
       var notFound = true;
       for(i = 0; i<triangulationKeys.length; i++){
-        if( stripFillingInfo(triangulationKeys[i]) == guiInfo.triangulation){
+        if( stripFillingInfo(triangulationKeys[i]) == stripFillingInfo(guiInfo.triangulation)){
           guiInfo.triangulation = triangulationKeys[i];
           notFound = false;
           break;
         }
       }
-      if(notFound){
-        guiInfo.triangulation = triangulationKeys[0];
-      }
+      if(notFound){guiInfo.triangulation = triangulationKeys[0];}
     }
+
     setUpTriangulationAndSurface(guiInfo.triangulation, guiInfo.surfaceIndex);
     sendGluingData();
     // seems like we have to recursively renew all of the controller ui?

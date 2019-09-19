@@ -19,7 +19,7 @@ var g_controllerDualPoints = [];
 
 var g_census_data;
 var g_census_index;
-var g_maxNumTet = 8;
+var g_maxNumTet = 9;
 var triangIntegerWeights = {};
 var planes; 
 var other_tet_nums; 
@@ -119,7 +119,7 @@ var globalsFrag;
 var mainFrag;
 
 var loadStuff = function(){
-  g_census_data = [0,0]; // dummy place holders, will get replaced as we load them
+  g_census_data = [0,0,0,0]; // dummy place holders, will get replaced as we load them
   g_census_index = 0;
   ////// Default cusped
   g_triangulation = 'cPcbbbiht_12';
@@ -127,10 +127,18 @@ var loadStuff = function(){
   // g_triangulation = 'gLMzQbcdefffhhhhhit_122112';
   g_surfaceIndex = 0;
 
-  // asynchronously load the closed census
+  // asynchronously load the non-default censuses
   var loader3 = new THREE.FileLoader();
     loader3.load('data/cannon_thurston_data_closed_374.json',function(data){
-    g_census_data[1] = JSON.parse(data); // we only need the closed census data when the user changes census in the UI
+    g_census_data[1] = JSON.parse(data); // we only need the non-default census data when the user changes census in the UI
+  });
+  var loader4 = new THREE.FileLoader();
+    loader4.load('data/cannon_thurston_data_cusped_cool_examples.json',function(data){
+    g_census_data[2] = JSON.parse(data); 
+  });
+  var loader5 = new THREE.FileLoader();
+    loader5.load('data/cannon_thurston_data_closed_cool_examples.json',function(data){
+    g_census_data[3] = JSON.parse(data); 
   });
         
   // and asynchronously load the default census
