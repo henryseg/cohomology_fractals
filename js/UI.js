@@ -50,7 +50,7 @@ var initGui = function(){
     gradientIndex: 0,
     toggleUI: true,
     eToHScale:2.0,
-    maxDist:2.0,
+    logMaxDist:2.0,
     maxSteps:100,
     fov:90,
     contrast:-1.2,
@@ -83,7 +83,7 @@ var initGui = function(){
   surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface");
   var gradientController = gui.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4}).name("Gradient");
   var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Speed");
-  var distController = gui.add(guiInfo, 'maxDist',0.0,5.0).name("Log screen dist");
+  var distController = gui.add(guiInfo, 'logMaxDist',0.0,5.0).name("Log screen dist");
   var stepsController = gui.add(guiInfo, 'maxSteps', 1,400).name("Max iterations");
   var contrastController = gui.add(guiInfo, 'contrast',-5.0,4.0).name("Contrast");
   var fovController = gui.add(guiInfo, 'fov',30,180).name("FOV");
@@ -246,7 +246,8 @@ var initGui = function(){
   // });
 
   distController.onChange(function(value){
-    g_material.uniforms.maxDist.value = Math.exp(value);
+    maxDist = Math.exp(value);
+    g_material.uniforms.maxDist.value = maxDist;
   });
 
   stepsController.onChange(function(value){

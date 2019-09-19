@@ -183,8 +183,6 @@ function takeScreenshot() {
         }
     }
 
-
-
     onResize(); //Resets us back to window size
     g_material.uniforms.maxDist.value = maxDist; //Reset back to default
     g_material.uniforms.multiScreenShot.value = 0; 

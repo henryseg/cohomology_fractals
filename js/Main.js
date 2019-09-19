@@ -45,7 +45,7 @@ var mesh;
 var renderer;
 var camera;
 var maxSteps = 100;
-var maxDist = 7.5;
+var maxDist = Math.exp(2.0);
 var subpixelCount = 1; // calculate this^2 rays per pixel
 var edgeThickness = 0.0;
 // var textFPS;
@@ -205,7 +205,7 @@ var finishInit = function(fShader){
       // cellBoost:{type:"m4", value:g_cellBoost},
       // invCellBoost:{type:"m4", value:g_invCellBoost},
       maxSteps:{type:"i", value:maxSteps},
-      maxDist:{type:"f", value:7.5},
+      maxDist:{type:"f", value:maxDist},
       subpixelCount:{type:"i", value:subpixelCount},
       edgeThickness:{type:"f", value:0.0},
       contrast:{type:"f", value:Math.exp(-1.2)},
@@ -287,6 +287,7 @@ var animate = function(){
 
   g_effect.render(scene, camera, animate);
   stats.end();
+  console.log(maxDist);
 }
 
 //-------------------------------------------------------
