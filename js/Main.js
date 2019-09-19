@@ -44,7 +44,7 @@ var scene;
 var mesh;
 var renderer;
 var camera;
-var maxSteps = 100;
+var maxSteps = Math.floor(Math.exp(4.6));
 var maxDist = Math.exp(2.0);
 var subpixelCount = 1; // calculate this^2 rays per pixel
 var edgeThickness = 0.0;

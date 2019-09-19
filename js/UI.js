@@ -51,7 +51,7 @@ var initGui = function(){
     toggleUI: true,
     eToHScale:2.0,
     logMaxDist:2.0,
-    maxSteps:100,
+    logMaxSteps:4.6,
     fov:90,
     contrast:-1.2,
     perspectiveType:1,
@@ -84,7 +84,7 @@ var initGui = function(){
   var gradientController = gui.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4}).name("Gradient");
   var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Speed");
   var distController = gui.add(guiInfo, 'logMaxDist',0.0,5.0).name("Log screen dist");
-  var stepsController = gui.add(guiInfo, 'maxSteps', 1,400).name("Max iterations");
+  var stepsController = gui.add(guiInfo, 'logMaxSteps', 0.0,7.0).name("Log max steps");
   var contrastController = gui.add(guiInfo, 'contrast',-5.0,4.0).name("Contrast");
   var fovController = gui.add(guiInfo, 'fov',30,180).name("FOV");
   var perspectiveTypeController = gui.add(guiInfo, 'perspectiveType', {'Material': 0, 'Ideal': 1}).name("Perspective type");
@@ -251,7 +251,8 @@ var initGui = function(){
   });
 
   stepsController.onChange(function(value){
-    g_material.uniforms.maxSteps.value = value;
+    maxSteps = Math.floor(Math.exp(value));
+    g_material.uniforms.maxSteps.value = maxSteps;
   });
 
   fovController.onChange(function(value){
