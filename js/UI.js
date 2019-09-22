@@ -44,6 +44,9 @@ var stripFillingInfo = function(s){
 //What we need to init our dat GUI
 var initGui = function(){
   guiInfo = { //Since dat gui can only modify object values we store variables here.
+    GetHelp: function(){
+      window.open('https://github.com/henryseg/Cannon-Thurston');  
+    },
     censusIndex: g_census_index,
     triangulation: g_triangulation,
     surfaceIndex: g_surfaceIndex,
@@ -75,6 +78,7 @@ var initGui = function(){
 
   var gui = new dat.GUI();
   gui.close();
+  gui.add(guiInfo, 'GetHelp').name("Help/About");
   //scene settings ---------------------------------
   var censusController = gui.add(guiInfo, 'censusIndex', {'Cusped':0, 'Closed':1, 'Cusped cool exs':2, 'Closed cool exs':3}).name("Census");
   var triangFolder = gui.addFolder('Triangulation and surface');
