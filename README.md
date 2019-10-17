@@ -4,7 +4,7 @@ Drawing Cannon-Thurston maps with the GPU. Try it out for yourself at https://he
 Derived from the websperience hypVR-Ray by Roice Nelson, Henry Segerman and Michael Woodard featured over at https://github.com/mtwoodard/hypVR-Ray, which was in turn based on the websperience  by Vi Hart, Andrea Hawksley, Sabetta Matsumoto and Henry Segerman featured over at https://github.com/hawksley/hypVR. 
 
 This project is being worked on by David Bachman, Saul Schleimer, and Henry Segerman.
-Henry Segerman is partially supported by NSF grant DMS-1708239.
+Henry Segerman is partially supported by NSF grant DMS-1708239. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.
 
 # Controls
 Use arrow keys to move and "wasd" to rotate the camera. "q" and "e" roll the camera. Click the "Open Controls" tab for more options.
