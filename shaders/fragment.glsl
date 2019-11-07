@@ -113,9 +113,9 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
       init_pt = new_pt * tsfm;  
       init_dir = R31_normalise( new_dir * tsfm ); 
     }
-    if(viewMode == 0){ return total_face_weight; } // Cannon-Thurston
-    else if(viewMode == 1){ return 0.5*maxDist - dist_to_go; } // Distance
-    else{ return float(tetNum);}
+    if(viewMode == 0){ return total_face_weight; } // Cannon-Thurston Colouring
+    else if(viewMode == 1){ return 0.5*maxDist - dist_to_go; } // Colour by Distance
+    else{ return float(tetNum);} // Colour by tetrahedron number
 }
 
 /// --- Graph-trace code --- ///
