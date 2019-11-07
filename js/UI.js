@@ -93,7 +93,7 @@ var initGui = function(){
   var fovController = gui.add(guiInfo, 'fov',30,180).name("FOV");
   var perspectiveTypeController = gui.add(guiInfo, 'perspectiveType', {'Material': 0, 'Ideal': 1}).name("Perspective type");
   var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.2).name("Edge thickness");
-  var viewModeController = gui.add(guiInfo, 'viewMode', {'Cannon-Thurston': 0, 'Distance': 1, 'Tetrahedron num': 2}).name("View mode");
+  var viewModeController = gui.add(guiInfo, 'viewMode', {'Cannon-Thurston': 0, 'Surface': 1, 'Distance': 2, 'Tetrahedron num': 3}).name("View mode");
   var subpixelCountController = gui.add(guiInfo, 'subpixelCount', {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5}).name("Subpixel count");
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
   var screenshotFolder = gui.addFolder('Screenshot');

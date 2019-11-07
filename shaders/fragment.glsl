@@ -104,7 +104,9 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
         // in fact pow(sinh(radius in hyperbolic units),2.0). However, sinh^2 is monotonic for 
         // positive values so we get correct behaviour by comparing without the sinh^2. 
       index = 4*tetNum + exit_face;
-      total_face_weight += weights[ index ];
+      if(viewMode == 0){ total_face_weight += weights[ index ]; }
+      else if(viewMode == 1){ total_face_weight += abs(weights[ index ]); }
+      
       entry_face = entering_face_nums[ index ];
       tsfm = SO31tsfms[ index ];
       tetNum = otherTetNums[ index ];
@@ -113,8 +115,8 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
       init_pt = new_pt * tsfm;  
       init_dir = R31_normalise( new_dir * tsfm ); 
     }
-    if(viewMode == 0){ return total_face_weight; } // Cannon-Thurston Colouring
-    else if(viewMode == 1){ return 0.5*maxDist - dist_to_go; } // Colour by Distance
+    if(viewMode <= 1){ return total_face_weight; } // Cannon-Thurston or Surface Colouring
+    else if(viewMode == 2){ return 0.5*maxDist - dist_to_go; } // Colour by Distance
     else{ return float(tetNum);} // Colour by tetrahedron number
 }
 
@@ -150,7 +152,8 @@ float graph_trace(inout vec4 goal_pt, inout int tetNum, out mat4 tsfm){ // tsfm 
         index = 4*tetNum + biggest_face;
         entry_face = entering_face_nums[ index ];
         tetNum = otherTetNums[ index ];
-        total_face_weight += weights[ index ];
+        if(viewMode == 0) { total_face_weight += weights[ index ]; }
+        else if(viewMode == 1) { total_face_weight += abs(weights[ index ]); }
         goal_pt *= SO31tsfms[ index ];
         tsfm *= SO31tsfms[ index ];
         // if (R31_dot(goal_pt, goal_pt) > -0.5){ return -1000.0; } // errors accumulate and we get junk!
@@ -202,14 +205,14 @@ float get_signed_count(vec2 xy){
     mat4 tsfm = mat4(1.0);
     int currentTetNum = tetNum;  // gets modified inside graph_trace
 
-    weight = graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt
+    weight = graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt. 
+    // weight is still zero if we are in viewMode >= 2.
     // init_pt *= tsfm;  // the point gets moved back in graph_trace
     init_dir *= tsfm;  // move the direction back to here
-    if(viewMode != 0){ weight = 0.0; } // the other modes don't have a cumulative count from moving to the correct tetrahedron
     weight += ray_trace(init_pt, init_dir, maxDist, currentTetNum);
   }
 
-  if(viewMode == 0){ // Cannon-Thurston
+  if(viewMode <= 1){ // Cannon-Thurston or Surface
     weight += currentWeight;
   }
   return weight;
