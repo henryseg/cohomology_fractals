@@ -87,10 +87,10 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum,
     return R31_normalise( init_pos + smallest_p * init_dir );
 }
 
-float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
+float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum, float inputWeight){
     int entry_face = -1;   /// starts off with no entry face
     int exit_face = -1;
-    float total_face_weight = 0.0;
+    float total_face_weight = inputWeight;
     vec4 new_pt;
     int index;
     mat4 tsfm;
@@ -106,8 +106,12 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
       index = 4*tetNum + exit_face;
       if(viewMode == 0){ total_face_weight += weights[ index ]; }
       else if(viewMode == 1){ total_face_weight += abs(weights[ index ]); }
-      else if(viewMode == 3){ if(abs(weights[index]) > 0.0001){ break; } } // exit if hit the surface
-      
+      else if(viewMode == 3){ total_face_weight += weights[ index ]; 
+        if( inputWeight >= 0.0 && total_face_weight < 0.0 ) { break; } 
+        if( inputWeight < 0.0 && total_face_weight >= 0.0 ) { break; } 
+      } 
+        // if you have changed sign from where you started then break. add 0.5 to stop sign(0)=0
+            
       entry_face = entering_face_nums[ index ];
       tsfm = SO31tsfms[ index ];
       tetNum = otherTetNums[ index ];
@@ -153,8 +157,8 @@ float graph_trace(inout vec4 goal_pt, inout int tetNum, out mat4 tsfm){ // tsfm 
         index = 4*tetNum + biggest_face;
         entry_face = entering_face_nums[ index ];
         tetNum = otherTetNums[ index ];
-        if(viewMode == 0) { total_face_weight += weights[ index ]; }
-        else if(viewMode == 1) { total_face_weight += abs(weights[ index ]); }
+        if(viewMode == 1) { total_face_weight += abs(weights[ index ]); }
+        else { total_face_weight += weights[ index ]; }
         goal_pt *= SO31tsfms[ index ];
         tsfm *= SO31tsfms[ index ];
         // if (R31_dot(goal_pt, goal_pt) > -0.5){ return -1000.0; } // errors accumulate and we get junk!
@@ -179,11 +183,18 @@ vec4 general_gradient(float t, float threshholds[5], vec3 colours[5]){
 
 /// --- Ray init pt and directions code --- ///
 
-vec4 get_ray_dir(vec2 xy){ 
+vec4 get_ray_pos_dir_material(vec2 xy, out vec4 ray_dir){ 
     xy = 0.2 * xy;
     float z = 0.1/tan(radians(fov*0.5));
-    vec4 p =  R31_normalise(vec4(xy,-z,0.0));
-    return p;
+    ray_dir = R31_normalise(vec4(xy,-z,0.0));
+    return vec4(0.0,0.0,0.0,1.0);
+}
+
+vec4 get_ray_pos_dir_ideal(vec2 xy, out vec4 ray_dir){ 
+    float foo = 0.5*dot(xy, xy);
+    vec4 ray_pt = vec4(xy.x, xy.y, foo, foo + 1.0);   // parabolic transformation magic by Saul
+    ray_dir = vec4(xy.x, xy.y, foo - 1.0, foo);
+    return ray_pt;
 }
 
 float get_signed_count(vec2 xy){
@@ -191,30 +202,22 @@ float get_signed_count(vec2 xy){
   vec4 init_dir;
   float weight = 0.0;
   if(perspectiveType == 0){ // material
-    init_pt = vec4(0.0,0.0,0.0,1.0);
-    init_dir = get_ray_dir(xy);
+    init_pt = get_ray_pos_dir_material(xy, init_dir);
     init_pt *= currentBoost;
     init_dir *= currentBoost; 
-    weight = ray_trace(init_pt, init_dir, maxDist, tetNum);
+    weight = ray_trace(init_pt, init_dir, maxDist, tetNum, currentWeight);
   }
   else{ // ideal
-    float foo = 0.5*dot(xy, xy);
-    init_pt = vec4(xy.x, xy.y, foo, foo + 1.0);   // parabolic transformation magic by Saul
-    init_dir = vec4(xy.x, xy.y, foo - 1.0, foo);
+    init_pt = get_ray_pos_dir_ideal(xy, init_dir);
     init_pt *= currentBoost;
     init_dir *= currentBoost; 
     mat4 tsfm = mat4(1.0);
     int currentTetNum = tetNum;  // gets modified inside graph_trace
 
     weight = graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt. 
-    // weight is still zero if we are in viewMode >= 2.
     // init_pt *= tsfm;  // the point gets moved back in graph_trace
     init_dir *= tsfm;  // move the direction back to here
-    weight += ray_trace(init_pt, init_dir, maxDist, currentTetNum);
-  }
-
-  if(viewMode <= 1){ // Cannon-Thurston or Surface
-    weight += currentWeight;
+    weight = ray_trace(init_pt, init_dir, maxDist, currentTetNum, currentWeight + weight);
   }
   return weight;
 }
@@ -225,6 +228,7 @@ void main(){
     // Here screenResolution is really tileResolution;
     xy = (xy + tile - 0.5*(numTiles - vec2(1.0,1.0))) / numTiles.x;
   }
+
   float total_weight = 0.0;
   for(int i=0; i<subpixelCount; i++){
     for(int j=0; j<subpixelCount; j++){
