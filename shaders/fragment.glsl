@@ -106,6 +106,7 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
       index = 4*tetNum + exit_face;
       if(viewMode == 0){ total_face_weight += weights[ index ]; }
       else if(viewMode == 1){ total_face_weight += abs(weights[ index ]); }
+      else if(viewMode == 3){ if(abs(weights[index]) > 0.0001){ break; } } // exit if hit the surface
       
       entry_face = entering_face_nums[ index ];
       tsfm = SO31tsfms[ index ];
@@ -116,7 +117,7 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
       init_dir = R31_normalise( new_dir * tsfm ); 
     }
     if(viewMode <= 1){ return total_face_weight; } // Cannon-Thurston or Surface Colouring
-    else if(viewMode == 2){ return 0.5*maxDist - dist_to_go; } // Colour by Distance
+    else if(viewMode == 2 || viewMode == 3){ return 0.5*maxDist - dist_to_go; } // Colour by Distance
     else{ return float(tetNum);} // Colour by tetrahedron number
 }
 
