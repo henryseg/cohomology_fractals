@@ -88,6 +88,10 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum,
 }
 
 float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum, float inputWeight){
+    int return_type = 0;
+    if(viewMode == 0 || viewMode == 2 || viewMode == 4){ return_type = 0; } // total_face_weight
+    else if(viewMode == 1 || viewMode == 3){ return_type = 1; } // distance
+    else if(viewMode == 5){ return_type = 2; } // tet number
     int entry_face = -1;   /// starts off with no entry face
     int exit_face = -1;
     float total_face_weight = inputWeight;
@@ -98,20 +102,22 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum, float
     for(int i=0; i<maxSteps; i++){
       new_pt = ray_trace_through_hyperboloid_tet(init_pt, init_dir, tetNum, entry_face, exit_face);
       dist_to_go -= hyp_dist(init_pt, new_pt);
-      if (dist_to_go <= 0.0){ break; }
+      if (dist_to_go <= 0.0){ dist_to_go = 0.0; break; }
       if(edgeThickness > 0.00001){
         if(triangleBdryParam(new_pt, tetNum, exit_face) < edgeThickness){ break; }}
         // in fact pow(sinh(radius in hyperbolic units),2.0). However, sinh^2 is monotonic for 
         // positive values so we get correct behaviour by comparing without the sinh^2. 
       index = 4*tetNum + exit_face;
-      if(viewMode == 0){ total_face_weight += weights[ index ]; }
-      else if(viewMode == 1){ total_face_weight += abs(weights[ index ]); }
-      else if(viewMode == 3){ total_face_weight += weights[ index ]; 
-        if( inputWeight >= 0.0 && total_face_weight < 0.0 ) { break; } 
-        if( inputWeight < 0.0 && total_face_weight >= 0.0 ) { break; } 
-      } 
-        // if you have changed sign from where you started then break. add 0.5 to stop sign(0)=0
-            
+      if(viewMode == 4){ total_face_weight += abs(weights[ index ]); }
+      else if(viewMode == 0 || viewMode == 1 || viewMode == 2){ 
+        total_face_weight += weights[ index ]; 
+        if( viewMode == 1 || viewMode == 2){
+          if( (inputWeight >= 0.0 && total_face_weight < 0.0) || (inputWeight < 0.0 && total_face_weight >= 0.0) ) { 
+            return_type = 1; 
+            break; 
+          } 
+        }
+      }             
       entry_face = entering_face_nums[ index ];
       tsfm = SO31tsfms[ index ];
       tetNum = otherTetNums[ index ];
@@ -120,8 +126,8 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum, float
       init_pt = new_pt * tsfm;  
       init_dir = R31_normalise( new_dir * tsfm ); 
     }
-    if(viewMode <= 1){ return total_face_weight; } // Cannon-Thurston or Surface Colouring
-    else if(viewMode == 2 || viewMode == 3){ return 0.5*maxDist - dist_to_go; } // Colour by Distance
+    if(return_type == 0){ return total_face_weight; } // Cannon-Thurston or Surface Colouring
+    else if(return_type == 1){ return 0.5*maxDist - dist_to_go; } // Colour by Distance
     else{ return float(tetNum);} // Colour by tetrahedron number
 }
 
@@ -157,7 +163,7 @@ float graph_trace(inout vec4 goal_pt, inout int tetNum, out mat4 tsfm){ // tsfm 
         index = 4*tetNum + biggest_face;
         entry_face = entering_face_nums[ index ];
         tetNum = otherTetNums[ index ];
-        if(viewMode == 1) { total_face_weight += abs(weights[ index ]); }
+        if(viewMode == 4) { total_face_weight += abs(weights[ index ]); } // translucent surface: all weights positive
         else { total_face_weight += weights[ index ]; }
         goal_pt *= SO31tsfms[ index ];
         tsfm *= SO31tsfms[ index ];
