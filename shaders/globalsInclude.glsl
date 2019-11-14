@@ -22,6 +22,7 @@ out vec4 out_FragColor;
 // uniform int isStereo;
 uniform vec2 screenResolution;
 uniform float fov;
+uniform float liftsThickness;
 
 uniform int tetNum;
 uniform mat4 currentBoost;

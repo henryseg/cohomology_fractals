@@ -55,15 +55,11 @@ var initGui = function(){
     eToHScale:2.0,
     logMaxDist:2.0,
     logMaxSteps:4.6,
-    fov:90,
     contrast:-1.2,
     perspectiveType:1,
     viewMode:0,
     subpixelCount:1,
     edgeThickness:0.0,
-    // toggleStereo:false,
-    // rotateEyes:false,
-    // halfIpDistance: 0.03200000151991844,
     screenshotWidth: g_screenShotResolution.x,
     screenshotHeight: g_screenShotResolution.y,
     resetPosition: function(){   
@@ -71,7 +67,9 @@ var initGui = function(){
     },
     TakeSS: function(){
       takeScreenshot();
-    }
+    },
+    fov:90,
+    liftsThickness:0.0
   };
 
   setUpTriangDict();
@@ -85,28 +83,23 @@ var initGui = function(){
   triangFolder.open();
   triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Triangulation");
   surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface");
+  var viewModeController = gui.add(guiInfo, 'viewMode', {'Cannon-Thurston': 0, 'Distance': 1, 'Tetrahedron num': 2}).name("View mode");
+  // var viewModeController = gui.add(guiInfo, 'viewMode', {'Cannon-Thurston': 0, 'Dist to Surface': 1, 'Dist to Surface + C-T': 2, 'Distance': 3, 'Translucent Surface': 4, 'Tetrahedron num': 5}).name("View mode");
+  var liftsController = gui.add(guiInfo, 'liftsThickness',0.0,3.0).name("Lifts of Surface");
+  var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.2).name("Edge thickness");
   var gradientController = gui.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4}).name("Gradient");
-  var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Speed");
+  var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Move speed");
   var distController = gui.add(guiInfo, 'logMaxDist',0.0,5.0).name("Log screen dist");
   var stepsController = gui.add(guiInfo, 'logMaxSteps', 0.0,7.0).name("Log max steps");
   var contrastController = gui.add(guiInfo, 'contrast',-5.0,4.0).name("Contrast");
-  var fovController = gui.add(guiInfo, 'fov',30,180).name("FOV");
   var perspectiveTypeController = gui.add(guiInfo, 'perspectiveType', {'Material': 0, 'Ideal': 1}).name("Perspective type");
-  var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.2).name("Edge thickness");
-  var viewModeController = gui.add(guiInfo, 'viewMode', {'Cannon-Thurston': 0, 'Dist to Surface': 1, 'Dist to Surface + C-T': 2, 'Distance': 3, 'Translucent Surface': 4, 'Tetrahedron num': 5}).name("View mode");
-  var subpixelCountController = gui.add(guiInfo, 'subpixelCount', {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5}).name("Subpixel count");
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
   var screenshotFolder = gui.addFolder('Screenshot');
   var widthController = screenshotFolder.add(guiInfo, 'screenshotWidth');
   var heightController = screenshotFolder.add(guiInfo, 'screenshotHeight');
   screenshotFolder.add(guiInfo, 'TakeSS').name("Take Screenshot");
-  //debug settings ---------------------------------
-  // var debugFolder = gui.addFolder('Debug');
-  // var stereoFolder = debugFolder.addFolder('Stereo');
-  // var debugUIController = debugFolder.add(guiInfo, 'toggleUI').name("Toggle Debug UI");
-  // var switchToStereo = stereoFolder.add(guiInfo, 'toggleStereo').name("Toggle Stereo");
-  // var rotateController = stereoFolder.add(guiInfo, 'rotateEyes').name("Rotate Eyes");
-  // var pupilDistanceController = stereoFolder.add(guiInfo, 'halfIpDistance').name("Interpupiliary Distance");
+  var fovController = gui.add(guiInfo, 'fov',30,180).name("FOV");
+  var subpixelCountController = gui.add(guiInfo, 'subpixelCount', {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5}).name("Subpixel count");
 
   // ------------------------------
   // UI Controllers
@@ -229,26 +222,6 @@ var initGui = function(){
     }
   });
 
-  // pController.onFinishChange(function(value) {
-	 //  updateUniformsFromUI();
-  // });
-
-  // qController.onFinishChange(function(value) {
-	 //  updateUniformsFromUI();
-  // });
-
-  // rController.onFinishChange(function(value) {
-	 //  updateUniformsFromUI();
-  // });
-
-  // thicknessController.onChange(function(value) {
-	 //  updateUniformsFromUI();
-  // });
-
-  // scaleController.onFinishChange(function(value) {
-  //   g_material.uniforms.etohScale.value = value;
-  // });
-
   distController.onChange(function(value){
     maxDist = Math.exp(value);
     g_material.uniforms.maxDist.value = maxDist;
@@ -257,10 +230,6 @@ var initGui = function(){
   stepsController.onChange(function(value){
     maxSteps = Math.floor(Math.exp(value));
     g_material.uniforms.maxSteps.value = maxSteps;
-  });
-
-  fovController.onChange(function(value){
-    g_material.uniforms.fov.value = value;
   });
 
   contrastController.onChange(function(value){
@@ -283,64 +252,12 @@ var initGui = function(){
     g_material.uniforms.subpixelCount.value = value;
   });
 
-  // debugUIController.onFinishChange(function(value){
-  //   var crosshair = document.getElementById("crosshair");
-  //   var crosshairLeft = document.getElementById("crosshairLeft");
-  //   var crosshairRight = document.getElementById("crosshairRight");
-  //   var fps = document.getElementById("fps");
-  //   var about = document.getElementById("about");
-  //   if(value){
-  //     about.style.visibility = 'visible';
-  //     fps.style.visibility = 'visible';
-  //     if(guiInfo.toggleStereo){
-  //       crosshairLeft.style.visibility = 'visible';
-  //       crosshairRight.style.visibility = 'visible';
-  //     }
-  //     else
-  //       crosshair.style.visibility = 'visible';
-  //   }
-  //   else{
-  //     about.style.visibility = 'hidden';
-  //     fps.style.visibility = 'hidden';
-  //     crosshair.style.visibility = 'hidden';
-  //     crosshairLeft.style.visibility = 'hidden';
-  //     crosshairRight.style.visibility = 'hidden';
-  //   }
-  // });
+  fovController.onChange(function(value){
+    g_material.uniforms.fov.value = value;
+  });
 
-  // switchToStereo.onFinishChange(function(value){
-  //   var crosshair = document.getElementById("crosshair");
-  //   var crosshairLeft = document.getElementById("crosshairLeft");
-  //   var crosshairRight = document.getElementById("crosshairRight");
-  //   if(guiInfo.toggleUI){
-  //     if(value){
-  //       g_material.uniforms.isStereo.value = 1;
-  //       crosshairLeft.style.visibility = 'visible';
-  //       crosshairRight.style.visibility = 'visible';
-  //       crosshair.style.visibility = 'hidden';
-  //     }
-  //     else{
-  //       g_material.uniforms.isStereo.value = 0;
-  //       g_material.uniforms.screenResolution.value.x = window.innerWidth;
-  //       g_material.uniforms.screenResolution.value.y = window.innerHeight;
-  //       crosshairLeft.style.visibility = 'hidden';
-  //       crosshairRight.style.visibility = 'hidden';
-  //       crosshair.style.visibility = 'visible';
-  //     }
-  //   }
-  // });
+  liftsController.onChange(function(value){
+    g_material.uniforms.liftsThickness.value = value;
+  });
 
-  // pupilDistanceController.onFinishChange(function(value){
-  //   updateEyes();
-  // });
-
-  // rotateController.onFinishChange(function(value) {
-  //   updateEyes();
-  // });
-
-  // sceneController.onFinishChange(function(index){
-	 //  var geoFrag = getGeometryFrag();
-  //   g_material.needsUpdate = true;
-  //   g_material.fragmentShader = globalsFrag.concat(lightingFrag).concat(geoFrag).concat(scenesFrag[index]).concat(mainFrag);
-  // });
 }

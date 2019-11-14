@@ -89,9 +89,9 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum,
 
 float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum, float inputWeight){
     int return_type = 0;
-    if(viewMode == 0 || viewMode == 2 || viewMode == 4){ return_type = 0; } // total_face_weight
-    else if(viewMode == 1 || viewMode == 3){ return_type = 1; } // distance
-    else if(viewMode == 5){ return_type = 2; } // tet number
+    if(viewMode == 0){ return_type = 0; } // total_face_weight
+    else if(viewMode == 1){ return_type = 1; } // distance
+    else if(viewMode == 2){ return_type = 2; } // tet number
     int entry_face = -1;   /// starts off with no entry face
     int exit_face = -1;
     float total_face_weight = inputWeight;
@@ -108,15 +108,16 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum, float
         // in fact pow(sinh(radius in hyperbolic units),2.0). However, sinh^2 is monotonic for 
         // positive values so we get correct behaviour by comparing without the sinh^2. 
       index = 4*tetNum + exit_face;
-      if(viewMode == 4){ total_face_weight += abs(weights[ index ]); }
-      else if(viewMode == 0 || viewMode == 1 || viewMode == 2){ 
-        total_face_weight += weights[ index ]; 
-        if( viewMode == 1 || viewMode == 2){
-          if( (inputWeight >= 0.0 && total_face_weight < 0.0) || (inputWeight < 0.0 && total_face_weight >= 0.0) ) { 
-            return_type = 1; 
-            break; 
-          } 
-        }
+      // if(viewMode == 2){ total_face_weight += abs(weights[ index ]); }
+      // else{ 
+      total_face_weight += weights[ index ]; 
+      if(liftsThickness > 0.0){ 
+        if( ( total_face_weight <= liftsThickness && liftsThickness < inputWeight ) || 
+                  ( inputWeight <= 0.0            &&            0.0 < total_face_weight ) ||
+            ( 0.0 < inputWeight && inputWeight <= liftsThickness && inputWeight != total_face_weight) ) { 
+          return_type = 1; 
+          break; 
+        } 
       }             
       entry_face = entering_face_nums[ index ];
       tsfm = SO31tsfms[ index ];
@@ -163,8 +164,9 @@ float graph_trace(inout vec4 goal_pt, inout int tetNum, out mat4 tsfm){ // tsfm 
         index = 4*tetNum + biggest_face;
         entry_face = entering_face_nums[ index ];
         tetNum = otherTetNums[ index ];
-        if(viewMode == 4) { total_face_weight += abs(weights[ index ]); } // translucent surface: all weights positive
-        else { total_face_weight += weights[ index ]; }
+        // if(viewMode == 2) { total_face_weight += abs(weights[ index ]); } // translucent surface: all weights positive
+        // else { 
+        total_face_weight += weights[ index ]; 
         goal_pt *= SO31tsfms[ index ];
         tsfm *= SO31tsfms[ index ];
         // if (R31_dot(goal_pt, goal_pt) > -0.5){ return -1000.0; } // errors accumulate and we get junk!

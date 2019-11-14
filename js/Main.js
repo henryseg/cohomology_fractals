@@ -201,17 +201,14 @@ var loadShaders = function(){ //Since our shader is made up of strings we can co
 var finishInit = function(fShader){
   g_material = new THREE.ShaderMaterial({
     uniforms:{
-      // isStereo:{type: "i", value: 0},
-      // geometry:{type: "i", value: 3},
       screenResolution:{type:"v2", value:g_screenResolution},
       fov:{type:"f", value:90},
-      // invGenerators:{type:"m4v", value:invGens},
+      liftsThickness:{type:"f", value:0.0},
+
       currentBoost:{type:"m4", value:g_currentBoost},
       tetNum:{type:"i", value:g_tet_num},
       currentWeight:{type:"f", value:0.0},
-      // stereoBoosts:{type:"m4v", value:g_stereoBoosts},
-      // cellBoost:{type:"m4", value:g_cellBoost},
-      // invCellBoost:{type:"m4", value:g_invCellBoost},
+
       maxSteps:{type:"i", value:maxSteps},
       maxDist:{type:"f", value:maxDist},
       subpixelCount:{type:"i", value:subpixelCount},
@@ -222,14 +219,7 @@ var finishInit = function(fShader){
       multiScreenShot:{type:"i", value:0},
       tile:{type:"vec2", value: new THREE.Vector2(0,0)},
       numTiles:{type:"vec2", value: new THREE.Vector2(1,1)},
-
-			// lightPositions:{type:"v4v", value:lightPositions},
-      // lightIntensities:{type:"v3v", value:lightIntensities},
-      // attnModel:{type:"i", value:attnModel},
-      // renderShadows:{type:"bv", value:[false, false]},
-      // shadSoft:{type:"f", value:128.0},
-      // tex:{type:"t", value: new THREE.TextureLoader().load("images/concrete2.png")},
-      // tex:{type:"t", value: new THREE.TextureLoader().load("images/white.png")},   
+ 
       controllerCount:{type:"i", value: 0},
       controllerBoosts:{type:"m4", value:g_controllerBoosts},
       planes:{type:"v4", value:planes},
@@ -239,20 +229,7 @@ var finishInit = function(fShader){
       SO31tsfms:{type:"m4", value: SO31tsfms},
       gradientThreshholds:{type:"f", value: gradientThreshholds},
       gradientColours:{type:"v3", value: gradientColours}
-      // globalObjectBoost:{type:"m4v", value:globalObjectBoost},
-      // globalObjectRadius:{type:"v3v", value:globalObjectRadius},
-			// halfCubeDualPoints:{type:"v4v", value:hCDP},
-      // halfCubeWidthKlein:{type:"f", value: hCWK},
-      // cut1:{type:"i", value:g_cut1},
-	  	// cut4:{type:"i", value:g_cut4},
-      // tubeRad:{type:"f", value:g_tubeRad},
-      // cellPosition:{type:"v4", value:g_cellPosition},
-      // cellSurfaceOffset:{type:"f", value:g_cellSurfaceOffset},
-      // vertexPosition:{type:"v4", value:g_vertexPosition},
-      // vertexSurfaceOffset:{type:"f", value:g_vertexSurfaceOffset},
-      // useSimplex:{type:"b", value:false},
-      // simplexMirrorsKlein:{type:"v4v", value:simplexMirrors},
-      // simplexDualPoints:{type:"v4v", value:simplexDualPoints}
+
     },
     // defines: {
     //   // NUM_LIGHTS: lightPositions.length,
