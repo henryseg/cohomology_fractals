@@ -23,7 +23,8 @@ var resetPosition = function(){
   g_material.uniforms.tetNum.value = g_tet_num;
   g_currentWeight = 0.0;
   g_material.uniforms.currentWeight.value = g_currentWeight;
-  g_currentBoost.identity();
+  // g_currentBoost.identity();
+  g_currentBoost.makeRotationX(Math.PI/2.0);
   g_controllerBoosts[0].identity();
 }
 
@@ -77,27 +78,32 @@ var initGui = function(){
   var gui = new dat.GUI();
   gui.close();
   gui.add(guiInfo, 'GetHelp').name("Help/About");
-  //scene settings ---------------------------------
+  // triangulation and surface ---------------------------------
   var censusController = gui.add(guiInfo, 'censusIndex', {'Cusped':0, 'Closed':1, 'Cusped cool exs':2, 'Closed cool exs':3}).name("Census");
   var triangFolder = gui.addFolder('Triangulation and surface');
   triangFolder.open();
   triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Triangulation");
   surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface");
+  // view mode -------------------------------------------------
   var viewModeController = gui.add(guiInfo, 'viewMode', {'Cannon-Thurston': 0, 'Distance': 1, 'Tetrahedron num': 2}).name("View mode");
-  // var viewModeController = gui.add(guiInfo, 'viewMode', {'Cannon-Thurston': 0, 'Dist to Surface': 1, 'Dist to Surface + C-T': 2, 'Distance': 3, 'Translucent Surface': 4, 'Tetrahedron num': 5}).name("View mode");
+  // things to draw --------------------------------------------
   var liftsController = gui.add(guiInfo, 'liftsThickness',0.0,3.0).name("Lifts of Surface");
   var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.2).name("Edge thickness");
-  var gradientController = gui.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4}).name("Gradient");
-  var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Move speed");
   var distController = gui.add(guiInfo, 'logMaxDist',0.0,5.0).name("Log screen dist");
   var stepsController = gui.add(guiInfo, 'logMaxSteps', 0.0,7.0).name("Log max steps");
+  // graphics options ------------------------------------------
   var contrastController = gui.add(guiInfo, 'contrast',-5.0,4.0).name("Contrast");
+  var gradientController = gui.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4}).name("Gradient");  
   var perspectiveTypeController = gui.add(guiInfo, 'perspectiveType', {'Material': 0, 'Ideal': 1}).name("Perspective type");
+  // movement controls -----------------------------------------
+  var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Move speed");
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
+  // screenshots -----------------------------------------------
   var screenshotFolder = gui.addFolder('Screenshot');
   var widthController = screenshotFolder.add(guiInfo, 'screenshotWidth');
   var heightController = screenshotFolder.add(guiInfo, 'screenshotHeight');
   screenshotFolder.add(guiInfo, 'TakeSS').name("Take Screenshot");
+  // extras ----------------------------------------------------
   var fovController = gui.add(guiInfo, 'fov',30,180).name("FOV");
   var subpixelCountController = gui.add(guiInfo, 'subpixelCount', {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5}).name("Subpixel count");
 
