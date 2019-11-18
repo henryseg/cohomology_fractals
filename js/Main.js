@@ -101,8 +101,8 @@ var init = function(){
     // g_currentBoost.multiply(temp);
 
     // Closed geodesic straight ahead initial position for cPcbbbiht_12
-    var temp = new THREE.Matrix4().makeRotationX(Math.PI/2.0);
-    g_currentBoost.multiply(temp);
+    // var temp = new THREE.Matrix4().makeRotationX(Math.PI/2.0);
+    // g_currentBoost.multiply(temp);
 
     // Nice initial position for gLLAQbecdfffhhnkqnc_120012:
     // var temp = parabolicBy2DVector(new THREE.Vector2(0.5,0)).premultiply(new THREE.Matrix4().makeRotationZ(Math.PI + Math.PI/3.5));
