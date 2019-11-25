@@ -207,6 +207,8 @@ var finishInit = function(fShader){
     uniforms:{
       screenResolution:{type:"v2", value:g_screenResolution},
       fov:{type:"f", value:90},
+      zoomFactor:{type:"f", value:1.0},
+      clippingRadius:{type:"f", value:0.0},
       liftsThickness:{type:"f", value:0.0},
 
       currentBoost:{type:"m4", value:g_currentBoost},

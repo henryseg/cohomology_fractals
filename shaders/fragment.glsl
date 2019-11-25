@@ -8,17 +8,17 @@
 //   v3 -------- v1
 // z               0
 
-  float R31_dot(vec4 u, vec4 v){
-    return u.x*v.x + u.y*v.y + u.z*v.z - u.w*v.w; // Lorentz Dot
-  }
+float R31_dot(vec4 u, vec4 v){
+  return u.x*v.x + u.y*v.y + u.z*v.z - u.w*v.w; // Lorentz Dot
+}
 
-  float R31_norm_inv(vec4 v){
-    return inversesqrt(abs(R31_dot(v,v)));
-  }
-  
-  vec4 R31_normalise(vec4 v){
-    return v*R31_norm_inv(v);
-  }
+float R31_norm_inv(vec4 v){
+  return inversesqrt(abs(R31_dot(v,v)));
+}
+
+vec4 R31_normalise(vec4 v){
+  return v*R31_norm_inv(v);
+}
 
 float geodesicParameterPlanes(vec4 samplePoint, vec4 dualPoint1, vec4 dualPoint2){
   // "distance" from a geodesic defined by two (assumed perpendicular) geodesic planes, this is not quite distance, need to asinh(sqrt( result ))
@@ -147,9 +147,12 @@ float amountOutsideTetrahedron(vec4 v, int tetNum, out int biggest_face) {
   return biggest_amount; 
 }
 
-// Get point at distance dist on the geodesic from u in the direction vPrime
-vec4 pointOnGeodesic(vec4 u, vec4 vPrime, float dist){
-  return u*cosh(dist) + vPrime*sinh(dist);
+vec4 pointOnGeodesic(vec4 pos, vec4 dir, float dist){
+  return pos*cosh(dist) + dir*sinh(dist);
+}
+
+vec4 tangentOnGeodesic(vec4 pos, vec4 dir, float dist){
+  return pos*sinh(dist) + dir*cosh(dist);
 }
 
 float graph_trace(inout vec4 goal_pt, inout int tetNum, out mat4 tsfm){ // tsfm is matrix to send goal_pt to its image in the tetrahedron coordinates it is in
@@ -209,29 +212,24 @@ float get_signed_count(vec2 xy){
   vec4 init_pt;
   vec4 init_dir;
   float weight = 0.0;
-  if(perspectiveType == 0){ // material
-    init_pt = get_ray_pos_dir_material(xy, init_dir);
-    init_pt *= currentBoost;
-    init_dir *= currentBoost; 
-    weight = ray_trace(init_pt, init_dir, maxDist, tetNum, currentWeight);
-  }
-  else{ // ideal
-    init_pt = get_ray_pos_dir_ideal(xy, init_dir);
-    init_pt *= currentBoost;
-    init_dir *= currentBoost; 
-    mat4 tsfm = mat4(1.0);
-    int currentTetNum = tetNum;  // gets modified inside graph_trace
-
-    weight = graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt. 
-    // init_pt *= tsfm;  // the point gets moved back in graph_trace
-    init_dir *= tsfm;  // move the direction back to here
-    weight = ray_trace(init_pt, init_dir, maxDist, currentTetNum, currentWeight + weight);
-  }
-  return weight;
+  mat4 tsfm = mat4(1.0);
+  int currentTetNum = tetNum;  // gets modified inside graph_trace
+  if(perspectiveType == 0){ init_pt = get_ray_pos_dir_material(xy, init_dir); }
+  else{ init_pt = get_ray_pos_dir_ideal(xy, init_dir); }
+  init_pt *= currentBoost;
+  init_dir *= currentBoost; 
+  vec4 new_init_pt = pointOnGeodesic(init_pt, init_dir, clippingRadius);
+  init_dir = tangentOnGeodesic(init_pt, init_dir, clippingRadius);
+  init_pt = new_init_pt;
+  weight = graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt. 
+  // init_pt *= tsfm;  // the point gets moved back in graph_trace
+  init_dir *= tsfm;  // move the direction back to here
+  return ray_trace(init_pt, init_dir, maxDist, currentTetNum, currentWeight + weight);
 }
 
 void main(){
   vec2 xy = (gl_FragCoord.xy - 0.5*screenResolution.xy)/screenResolution.x;
+  xy *= zoomFactor;
   if(multiScreenShot == 1){  // Return multiple 4096x4096 screenshots that can be combined in, e.g. Photoshop.
     // Here screenResolution is really tileResolution;
     xy = (xy + tile - 0.5*(numTiles - vec2(1.0,1.0))) / numTiles.x;

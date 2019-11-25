@@ -22,6 +22,8 @@ out vec4 out_FragColor;
 // uniform int isStereo;
 uniform vec2 screenResolution;
 uniform float fov;
+uniform float zoomFactor;
+uniform float clippingRadius;
 uniform float liftsThickness;
 
 uniform int tetNum;

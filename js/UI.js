@@ -6,6 +6,7 @@ var guiInfo;
 var surfaceController;
 var triangulationController;
 var triangulationDict;
+var fovController;
 
 // Inputs are from the UI parameterizations.
 // gI is the guiInfo object from initGui
@@ -23,8 +24,8 @@ var resetPosition = function(){
   g_material.uniforms.tetNum.value = g_tet_num;
   g_currentWeight = 0.0;
   g_material.uniforms.currentWeight.value = g_currentWeight;
-  // g_currentBoost.identity();
-  g_currentBoost.makeRotationX(Math.PI/2.0);
+  g_currentBoost.identity();
+  // g_currentBoost.makeRotationX(Math.PI/2.0);
   g_controllerBoosts[0].identity();
 }
 
@@ -70,6 +71,8 @@ var initGui = function(){
       takeScreenshot();
     },
     fov:90,
+    zoomFactor:1.0,
+    clippingRadius:0.0,
     liftsThickness:0.0
   };
 
@@ -89,13 +92,18 @@ var initGui = function(){
   // things to draw --------------------------------------------
   var liftsController = gui.add(guiInfo, 'liftsThickness',0.0,3.0).name("Lifts of Surface");
   var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.2).name("Edge thickness");
-  var distController = gui.add(guiInfo, 'logMaxDist',0.0,5.0).name("Log screen dist");
-  var stepsController = gui.add(guiInfo, 'logMaxSteps', 0.0,7.0).name("Log max steps");
-  // graphics options ------------------------------------------
-  var contrastController = gui.add(guiInfo, 'contrast',-5.0,4.0).name("Contrast");
-  var gradientController = gui.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4}).name("Gradient");  
-  var perspectiveTypeController = gui.add(guiInfo, 'perspectiveType', {'Material': 0, 'Ideal': 1}).name("Perspective type");
-  // movement controls -----------------------------------------
+  // colour options ------------------------------------------
+  var colourFolder = gui.addFolder('Colour options');
+  var gradientController = colourFolder.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4}).name("Colour scheme");  
+  var contrastController = colourFolder.add(guiInfo, 'contrast',-5.0,4.0).name("Contrast");
+  // view options
+  var viewFolder = gui.addFolder('View options');
+  var perspectiveTypeController = viewFolder.add(guiInfo, 'perspectiveType', {'Material': 0, 'Ideal': 1}).name("Perspective type");
+  var zoomController = viewFolder.add(guiInfo, 'zoomFactor',1.0,10.0).name("Zoom");
+  var stepsController = viewFolder.add(guiInfo, 'logMaxSteps', 0.0,7.0).name("Log max steps");
+  var distController = viewFolder.add(guiInfo, 'logMaxDist',0.0,5.0).name("Log screen dist");
+  var clippingRadiusController = viewFolder.add(guiInfo, 'clippingRadius',0.0,3.0).name("Clipping Radius");
+    // movement controls -----------------------------------------
   var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Move speed");
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
   // screenshots -----------------------------------------------
@@ -104,7 +112,6 @@ var initGui = function(){
   var heightController = screenshotFolder.add(guiInfo, 'screenshotHeight');
   screenshotFolder.add(guiInfo, 'TakeSS').name("Take Screenshot");
   // extras ----------------------------------------------------
-  var fovController = gui.add(guiInfo, 'fov',30,180).name("FOV");
   var subpixelCountController = gui.add(guiInfo, 'subpixelCount', {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5}).name("Subpixel count");
 
   // ------------------------------
@@ -244,6 +251,15 @@ var initGui = function(){
 
   perspectiveTypeController.onChange(function(value){
     g_material.uniforms.perspectiveType.value = value;
+    if(value == 0){
+      fovController = viewFolder.add(guiInfo, 'fov',30,180).name("FOV");
+      fovController.onChange(function(value){
+        g_material.uniforms.fov.value = value;
+      });
+    }
+    else{
+      viewFolder.remove(fovController); 
+    }
   });
 
   edgeThicknessController.onChange(function(value){
@@ -258,8 +274,14 @@ var initGui = function(){
     g_material.uniforms.subpixelCount.value = value;
   });
 
-  fovController.onChange(function(value){
-    g_material.uniforms.fov.value = value;
+
+
+  zoomController.onChange(function(value){
+    g_material.uniforms.zoomFactor.value = 1.0/value;
+  });
+
+  clippingRadiusController.onChange(function(value){
+    g_material.uniforms.clippingRadius.value = value;
   });
 
   liftsController.onChange(function(value){
