@@ -101,8 +101,8 @@ var initGui = function(){
   var perspectiveTypeController = viewFolder.add(guiInfo, 'perspectiveType', {'Material': 0, 'Ideal': 1}).name("Perspective type");
   var zoomController = viewFolder.add(guiInfo, 'zoomFactor',1.0,10.0).name("Zoom");
   var stepsController = viewFolder.add(guiInfo, 'logMaxSteps', 0.0,7.0).name("Log max steps");
-  var distController = viewFolder.add(guiInfo, 'logMaxDist',0.0,5.0).name("Log screen dist");
-  var clippingRadiusController = viewFolder.add(guiInfo, 'clippingRadius',0.0,3.0).name("Clipping Radius");
+  var distController = viewFolder.add(guiInfo, 'logMaxDist',-1.0,5.0).name("Log screen dist");
+  var clippingRadiusController = viewFolder.add(guiInfo, 'clippingRadius',0.0,5.0).name("Clipping Radius");
     // movement controls -----------------------------------------
   var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Move speed");
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
