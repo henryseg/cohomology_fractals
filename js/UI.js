@@ -72,7 +72,7 @@ var initGui = function(){
     },
     fov:90,
     zoomFactor:1.0,
-    clippingRadius:0.0,
+    logClippingRadius:-2.0,
     liftsThickness:0.0
   };
 
@@ -91,7 +91,7 @@ var initGui = function(){
   var viewModeController = gui.add(guiInfo, 'viewMode', {'Cannon-Thurston': 0, 'Distance': 1, 'Tetrahedron num': 2}).name("View mode");
   // things to draw --------------------------------------------
   var liftsController = gui.add(guiInfo, 'liftsThickness',0.0,3.0).name("Lifts of Surface");
-  var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.2).name("Edge thickness");
+  var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.4).name("Edge thickness");
   // colour options ------------------------------------------
   var colourFolder = gui.addFolder('Colour options');
   var gradientController = colourFolder.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4}).name("Colour scheme");  
@@ -102,7 +102,7 @@ var initGui = function(){
   var zoomController = viewFolder.add(guiInfo, 'zoomFactor',1.0,10.0).name("Zoom");
   var stepsController = viewFolder.add(guiInfo, 'logMaxSteps', 0.0,7.0).name("Log max steps");
   var distController = viewFolder.add(guiInfo, 'logMaxDist',-1.0,5.0).name("Log screen dist");
-  var clippingRadiusController = viewFolder.add(guiInfo, 'clippingRadius',0.0,5.0).name("Clipping Radius");
+  var clippingRadiusController = viewFolder.add(guiInfo, 'logClippingRadius',-2.0,2.0).name("Log clip radius");
     // movement controls -----------------------------------------
   var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Move speed");
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
@@ -281,7 +281,7 @@ var initGui = function(){
   });
 
   clippingRadiusController.onChange(function(value){
-    g_material.uniforms.clippingRadius.value = value;
+    g_material.uniforms.clippingRadius.value = Math.exp(value);
   });
 
   liftsController.onChange(function(value){
