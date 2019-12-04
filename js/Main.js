@@ -133,21 +133,21 @@ var loadStuff = function(){
 
   // asynchronously load the non-default censuses
   var loader3 = new THREE.FileLoader();
-    loader3.load('data/cannon_thurston_data_closed_374.json',function(data){
+    loader3.load('data/cohomology_data_closed_374.json',function(data){
     g_census_data[1] = JSON.parse(data); // we only need the non-default census data when the user changes census in the UI
   });
   var loader4 = new THREE.FileLoader();
-    loader4.load('data/cannon_thurston_data_cusped_cool_examples.json',function(data){
+    loader4.load('data/cohomology_data_cusped_cool_examples.json',function(data){
     g_census_data[2] = JSON.parse(data); 
   });
   var loader5 = new THREE.FileLoader();
-    loader5.load('data/cannon_thurston_data_closed_cool_examples.json',function(data){
+    loader5.load('data/cohomology_data_closed_cool_examples.json',function(data){
     g_census_data[3] = JSON.parse(data); 
   });
         
   // and asynchronously load the default census
   var loader2 = new THREE.FileLoader();
-  loader2.load('data/cannon_thurston_data_cusped_374.json',function(data){
+  loader2.load('data/cohomology_data_cusped_374.json',function(data){
     g_census_data[0] = JSON.parse(data);    
     loadShaders();  // can only set up everything else once we have the default data loaded
     setUpTriangulationAndSurface(g_triangulation, g_surfaceIndex);

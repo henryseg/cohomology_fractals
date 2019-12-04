@@ -47,7 +47,7 @@ var stripFillingInfo = function(s){
 var initGui = function(){
   guiInfo = { //Since dat gui can only modify object values we store variables here.
     GetHelp: function(){
-      window.open('https://github.com/henryseg/Cannon-Thurston');  
+      window.open('https://github.com/henryseg/cohomology_fractals');  
     },
     censusIndex: g_census_index,
     triangulation: g_triangulation,
@@ -88,7 +88,7 @@ var initGui = function(){
   triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Triangulation");
   surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface");
   // view mode -------------------------------------------------
-  var viewModeController = gui.add(guiInfo, 'viewMode', {'Cannon-Thurston': 0, 'Distance': 1, 'Tetrahedron num': 2}).name("View mode");
+  var viewModeController = gui.add(guiInfo, 'viewMode', {'Cohomology': 0, 'Distance': 1, 'Tetrahedron num': 2}).name("View mode");
   // things to draw --------------------------------------------
   var liftsController = gui.add(guiInfo, 'liftsThickness',0.0,3.0).name("Lifts of Surface");
   var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.4).name("Edge thickness");
