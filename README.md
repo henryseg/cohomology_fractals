@@ -1,5 +1,5 @@
-# Cannon-Thurston
-Drawing Cannon-Thurston maps with the GPU. Try it out for yourself at https://henryseg.github.io/Cannon-Thurston/
+# Cohomology fractals
+Drawing cohomology fractals with the GPU. Try it out for yourself at https://henryseg.github.io/cohomology_fractals/
 
 Derived from the websperience hypVR-Ray by Roice Nelson, Henry Segerman and Michael Woodard featured over at https://github.com/mtwoodard/hypVR-Ray, which was in turn based on the websperience  by Vi Hart, Andrea Hawksley, Sabetta Matsumoto and Henry Segerman featured over at https://github.com/hawksley/hypVR. 
 
