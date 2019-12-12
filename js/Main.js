@@ -20,13 +20,12 @@ var g_controllerDualPoints = [];
 var g_census_data;
 var g_census_index;
 var g_maxNumTet = 9;
-var triangIntegerWeights = {};
+var weightsBasis;
 var planes; 
 var other_tet_nums; 
 var entering_face_nums; 
-var weights; 
 var SO31tsfms; 
-var tet_vertices;
+var weights; 
 var gradientThreshholds = [0.0, 0.25, 0.45, 0.75, 1.000001];
 var gradientColours = [new THREE.Vector3(1.0, 1.0, 1.0),  // cool
                        new THREE.Vector3(0.86274, 0.92941, 0.78431), 
@@ -34,7 +33,7 @@ var gradientColours = [new THREE.Vector3(1.0, 1.0, 1.0),  // cool
                        new THREE.Vector3(0.10196, 0.13725, 0.49412), 
                        new THREE.Vector3(0.0, 0.0, 0.0)];
 var g_triangulation;
-var g_surfaceIndex;
+var g_surfaceCoeffs;
 var g_census = 0;
 
 //-------------------------------------------------------
@@ -123,64 +122,76 @@ var globalsFrag;
 var mainFrag;
 
 var loadStuff = function(){
-  g_census_data = [0,0,0,0]; // dummy place holders, will get replaced as we load them
+  g_census_data = [0,0,0]; // dummy place holders, will get replaced as we load them
   g_census_index = 0;
   ////// Default cusped
-  g_triangulation = 'cPcbbbiht_12';
-  // g_triangulation = 'gLLAQbecdfffhhnkqnc_120012';
-  // g_triangulation = 'gLMzQbcdefffhhhhhit_122112';
-  g_surfaceIndex = 0;
+  g_triangulation = 'm004';
+  g_surfaceCoeffs = [1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];  // pad with extra zeros
 
   // asynchronously load the non-default censuses
   var loader3 = new THREE.FileLoader();
-    loader3.load('data/cohomology_data_closed_374.json',function(data){
+    loader3.load('data/cohomology_data_s.json',function(data){
     g_census_data[1] = JSON.parse(data); // we only need the non-default census data when the user changes census in the UI
   });
   var loader4 = new THREE.FileLoader();
-    loader4.load('data/cohomology_data_cusped_cool_examples.json',function(data){
+    loader4.load('data/cohomology_data_v.json',function(data){
     g_census_data[2] = JSON.parse(data); 
   });
-  var loader5 = new THREE.FileLoader();
-    loader5.load('data/cohomology_data_closed_cool_examples.json',function(data){
-    g_census_data[3] = JSON.parse(data); 
-  });
+  // var loader5 = new THREE.FileLoader();
+  //   loader5.load('data/cohomology_data_closed_cool_examples.json',function(data){
+  //   g_census_data[3] = JSON.parse(data); 
+  // });
         
   // and asynchronously load the default census
   var loader2 = new THREE.FileLoader();
-  loader2.load('data/cohomology_data_cusped_374.json',function(data){
+  loader2.load('data/cohomology_data_m.json',function(data){
     g_census_data[0] = JSON.parse(data);    
     loadShaders();  // can only set up everything else once we have the default data loaded
-    setUpTriangulationAndSurface(g_triangulation, g_surfaceIndex);
+    setUpTriangulation(g_triangulation);
+    setUpSurface(g_triangulation, g_surfaceCoeffs);
     //Setup dat GUI --- SceneManipulator.js
     initGui();
   });
 } 
 
-var setUpTriangulationAndSurface = function(triangulation, surfaceIndex){
+var setUpTriangulation = function(triangulation){
   var triang_data = g_census_data[g_census_index][triangulation];
-  triangIntegerWeights = {};
-  for(i=0;i<triang_data.length;i++){
-    triangIntegerWeights[triang_data[i][5].toString()] = i;
-    //triangIntegerWeights.push(triang_data[i][5]);
-  }
 
-  var triang_surface_data = triang_data[surfaceIndex];  
-  // console.log(triang_surface_data);
-  /// set up a for loop to build planes array using array2vector4...
   planes = [];
   other_tet_nums = [];
   entering_face_nums = [];
-  weights = [];
   SO31tsfms = [];
   
-  var data_length = triang_surface_data[0].length;
+  var data_length = triang_data[0].length;
+  var i;
   for(i=0;i<4*g_maxNumTet;i++){
-    planes.push(array2vector4(triang_surface_data[0][i%data_length]));  // pad out the extra space in the array 
-    other_tet_nums.push(triang_surface_data[1][i%data_length]);
-    entering_face_nums.push(triang_surface_data[2][i%data_length]);
-    weights.push(triang_surface_data[3][i%data_length]);
-    SO31tsfms.push(array2matrix4(triang_surface_data[4][i%data_length]));
+    planes.push(array2vector4(triang_data[0][i%data_length]));  // pad out the extra space in the array 
+    other_tet_nums.push(triang_data[1][i%data_length]);
+    entering_face_nums.push(triang_data[2][i%data_length]);
+    SO31tsfms.push(array2matrix4(triang_data[3][i%data_length]));
   }   
+  weightsBasis = [];
+  var j;
+  for(j=0;j<triang_data[4].length;j++){
+    weightsBasis.push(triang_data[4][j][0].toString())  // only used for names
+  }
+}
+
+var setUpSurface = function(triangulation, surfaceCoeffs){ // surfaceCoeffs is a list of floats...
+  var triang_data = g_census_data[g_census_index][triangulation];
+
+  weights = [];
+  var i;
+  for(i=0;i<4*g_maxNumTet;i++){
+    weights.push(0.0);
+  }
+  var data_length = triang_data[0].length;
+  var j;
+  for(j=0;j<triang_data[4].length;j++){
+    for(i=0;i<4*g_maxNumTet;i++){
+      weights[i] = weights[i] + surfaceCoeffs[j]*triang_data[4][j][1][i%data_length]
+    }
+  }
 }
 
 var loadShaders = function(){ //Since our shader is made up of strings we can construct it from parts

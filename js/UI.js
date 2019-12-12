@@ -3,7 +3,8 @@
 //-------------------------------------------------------
 
 var guiInfo;
-var surfaceController;
+var triangFolder;
+var surfaceController = [0,0,0,0,0,0,0,0]; // dummy variables
 var triangulationController;
 var triangulationDict;
 var fovController;
@@ -15,8 +16,11 @@ var sendGluingData = function(){
   g_material.uniforms.planes.value = planes;  
   g_material.uniforms.otherTetNums.value = other_tet_nums;
   g_material.uniforms.entering_face_nums.value = entering_face_nums;
-  g_material.uniforms.weights.value = weights;
   g_material.uniforms.SO31tsfms.value = SO31tsfms;
+}
+
+var sendWeights = function(){
+  g_material.uniforms.weights.value = weights;
 }
 
 var resetPosition = function(){
@@ -43,6 +47,38 @@ var stripFillingInfo = function(s){
     return s.substring(0, n != -1 ? n : s.length);
 }
 
+var setUpSurfaceController = function(i){
+  surfaceController[i] = triangFolder.add(guiInfo, 'surfaceCoeffs'.concat(i.toString()), -1.0,1.0).name(weightsBasis[i]);
+  surfaceController[i].onChange(function(value){  
+  g_surfaceCoeffs[i] = value;
+  setUpSurface(guiInfo.triangulation, g_surfaceCoeffs);
+  sendWeights();
+  });
+}
+
+var setUpSurfaceControllers = function(){
+  var j;
+  for(j=0;j<weightsBasis.length;j++){ 
+    setUpSurfaceController(j);
+  }
+}
+
+var setUpTriangulationController = function(){
+  triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Manifold");
+  triangulationController.onFinishChange(function(value){
+    var j;
+    for(j=0;j<weightsBasis.length;j++){ 
+      triangFolder.remove(surfaceController[j]); 
+    }
+    resetPosition();
+    setUpTriangulation(value);  // sets weightsBasis to new values
+    sendGluingData();
+    setUpSurface(value, g_surfaceCoeffs);
+    sendWeights();
+    setUpSurfaceControllers();
+  });
+}
+
 //What we need to init our dat GUI
 var initGui = function(){
   guiInfo = { //Since dat gui can only modify object values we store variables here.
@@ -51,7 +87,14 @@ var initGui = function(){
     },
     censusIndex: g_census_index,
     triangulation: g_triangulation,
-    surfaceIndex: g_surfaceIndex,
+    surfaceCoeffs0: 1.0,
+    surfaceCoeffs1: 0.0,
+    surfaceCoeffs2: 0.0,
+    surfaceCoeffs3: 0.0,
+    surfaceCoeffs4: 0.0,
+    surfaceCoeffs5: 0.0,
+    surfaceCoeffs6: 0.0,
+    surfaceCoeffs7: 0.0,
     gradientIndex: 0,
     toggleUI: true,
     eToHScale:2.0,
@@ -82,15 +125,16 @@ var initGui = function(){
   gui.close();
   gui.add(guiInfo, 'GetHelp').name("Help/About");
   // triangulation and surface ---------------------------------
-  var censusController = gui.add(guiInfo, 'censusIndex', {'Cusped':0, 'Closed':1, 'Cusped cool exs':2, 'Closed cool exs':3}).name("Census");
-  var triangFolder = gui.addFolder('Triangulation and surface');
+  var censusController = gui.add(guiInfo, 'censusIndex', {'m':0, 's':1, 'v':2}).name("Census");
+  triangFolder = gui.addFolder('Manifold and cohomology class');
   triangFolder.open();
-  triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Triangulation");
-  surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface");
+  // triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Manifold");
+  // triangulationController added later
+  // surfaceController added later
   // view mode -------------------------------------------------
   var viewModeController = gui.add(guiInfo, 'viewMode', {'Cohomology': 0, 'Distance': 1, 'Tetrahedron num': 2}).name("View mode");
   // things to draw --------------------------------------------
-  var liftsController = gui.add(guiInfo, 'liftsThickness',0.0,3.0).name("Lifts of Surface");
+  var liftsController = gui.add(guiInfo, 'liftsThickness',0.0,1.0).name("Elevations");
   var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.4).name("Edge thickness");
   // colour options ------------------------------------------
   var colourFolder = gui.addFolder('Colour options');
@@ -126,69 +170,32 @@ var initGui = function(){
   });
 
   censusController.onFinishChange(function(value){
+    var j;
+    for(j=0;j<weightsBasis.length;j++){ 
+      triangFolder.remove(surfaceController[j]); 
+    }
+    triangFolder.remove(triangulationController);
+
     g_census_index = value;
     setUpTriangDict();
     resetPosition();
     var triangulationKeys = Object.keys(g_census_data[g_census_index]);
     triangulationKeys.sort();
-    //see if the same triangulation is in the other census
-    if(g_census_index%2 == 0){  // we are going to a cusped census
-      var strippedName = stripFillingInfo(guiInfo.triangulation);
-      if(triangulationKeys.indexOf(strippedName) >= 0) {guiInfo.triangulation = strippedName;}
-      else {guiInfo.triangulation = triangulationKeys[0];}
-    }
-    else { // we are going to a closed census
-      var notFound = true;
-      for(i = 0; i<triangulationKeys.length; i++){
-        if( stripFillingInfo(triangulationKeys[i]) == stripFillingInfo(guiInfo.triangulation)){
-          guiInfo.triangulation = triangulationKeys[i];
-          notFound = false;
-          break;
-        }
-      }
-      if(notFound){guiInfo.triangulation = triangulationKeys[0];}
-    }
 
-    setUpTriangulationAndSurface(guiInfo.triangulation, guiInfo.surfaceIndex);
+    guiInfo.triangulation = triangulationKeys[0];
+    g_triangulation = guiInfo.triangulation;
+    setUpTriangulation(g_triangulation);
     sendGluingData();
-    // seems like we have to recursively renew all of the controller ui?
-    triangFolder.remove(surfaceController); // renew surface controller ui
-    triangFolder.remove(triangulationController);
-    triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Triangulation");
-    surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface");
-    triangulationController.onFinishChange(function(value){ // renew triangulation controller ui
-      resetPosition();
-      setUpTriangulationAndSurface(value, 0);
-      sendGluingData();
-      triangFolder.remove(surfaceController); // renew surface controller ui
-      surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface"); 
-      surfaceController.onFinishChange(function(value){  
-        setUpTriangulationAndSurface(guiInfo.triangulation, value);
-        sendGluingData();
-      });
-    });
-    surfaceController.onFinishChange(function(value){  // renew surface controller ui
-      setUpTriangulationAndSurface(guiInfo.triangulation, value);
-      sendGluingData();
-    });
+    setUpSurface(g_triangulation, g_surfaceCoeffs);
+    sendWeights();
+    // seems like we have to recursively renew all of the controller ui    
+    setUpTriangulationController();
+    setUpSurfaceControllers();
   });
 
-  triangulationController.onFinishChange(function(value){
-    resetPosition();
-    setUpTriangulationAndSurface(value, 0);
-    sendGluingData();
-    triangFolder.remove(surfaceController); // renew surface controller ui
-    surfaceController = triangFolder.add(guiInfo, 'surfaceIndex', triangIntegerWeights).name("Surface"); 
-    surfaceController.onFinishChange(function(value){  
-      setUpTriangulationAndSurface(guiInfo.triangulation, value);
-      sendGluingData();
-    });
-  });
+  setUpTriangulationController();
 
-  surfaceController.onFinishChange(function(value){  
-    setUpTriangulationAndSurface(guiInfo.triangulation, value);
-    sendGluingData();
-  });
+  setUpSurfaceControllers();
 
   gradientController.onFinishChange(function(value){
     if(value == 0){ // Cool

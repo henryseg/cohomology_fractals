@@ -112,7 +112,7 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum, float
       // else{ 
       total_face_weight += weights[ index ]; 
       if(liftsThickness > 0.0){ 
-        if( ( total_face_weight <= liftsThickness && liftsThickness < inputWeight ) || 
+        if( ( total_face_weight <= liftsThickness && liftsThickness < inputWeight )       || 
                   ( inputWeight <= 0.0            &&            0.0 < total_face_weight ) ||
             ( 0.0 < inputWeight && inputWeight <= liftsThickness && inputWeight != total_face_weight) ) { 
           return_type = 1; 
