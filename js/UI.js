@@ -292,7 +292,7 @@ var initGui = function(){
   });
 
   liftsController.onChange(function(value){
-    g_material.uniforms.liftsThickness.value = value;
+    g_material.uniforms.liftsThickness.value = value*value; // slower start
   });
 
 }
