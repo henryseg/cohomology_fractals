@@ -158,7 +158,7 @@ var initGui = function(){
   // view mode -------------------------------------------------
   var viewModeController = gui.add(guiInfo, 'viewMode', {'Cohomology': 0, 'Distance': 1, 'Tetrahedron num': 2}).name("View mode");
   // things to draw --------------------------------------------
-  var liftsController = gui.add(guiInfo, 'liftsThickness',0.0,1.0).name("Elevations");
+  var liftsController = gui.add(guiInfo, 'liftsThickness',0.0,2.0).name("Elevations");
   var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.4).name("Edge thickness");
   // colour options ------------------------------------------
   var colourFolder = gui.addFolder('Colour options');
