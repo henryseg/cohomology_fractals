@@ -146,6 +146,9 @@ THREE.VREffect = function ( renderer, done ) {
 		// }
 
 		renderer.render.apply( this._renderer, [scene, camera]  );
+		if(guiInfo.recording == true){
+			capturer.capture( canvas );
+		}
 	};
 
 	this.setSize = function( width, height ) {

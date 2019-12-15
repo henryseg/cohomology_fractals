@@ -5,9 +5,11 @@
 var guiInfo;
 var triangFolder;
 var surfaceController = [0,0,0,0,0,0,0,0]; // dummy variables
+var geometryController;
 var triangulationController;
 var triangulationDict;
 var fovController;
+var capturer;
 
 // Inputs are from the UI parameterizations.
 // gI is the guiInfo object from initGui
@@ -48,17 +50,17 @@ var stripFillingInfo = function(s){
 }
 
 var setUpSurfaceController = function(i){
-  surfaceController[i] = triangFolder.add(guiInfo, 'surfaceCoeffs'.concat(i.toString()), -1.0,1.0).name(weightsBasis[i]);
+  surfaceController[i] = triangFolder.add(guiInfo, 'surfaceCoeffs'.concat(i.toString()), -1.0,1.0).name(g_weightsBasis[i]);
   surfaceController[i].onChange(function(value){  
-  g_surfaceCoeffs[i] = value;
-  setUpSurface(guiInfo.triangulation, g_surfaceCoeffs);
-  sendWeights();
+    g_surfaceCoeffs[i] = value;
+    setUpSurface(guiInfo.triangulation, g_surfaceCoeffs);
+    sendWeights();
   });
 }
 
 var setUpSurfaceControllers = function(){
   var j;
-  for(j=0;j<weightsBasis.length;j++){ 
+  for(j=0;j<g_weightsBasis.length;j++){ 
     setUpSurfaceController(j);
   }
 }
@@ -66,16 +68,32 @@ var setUpSurfaceControllers = function(){
 var setUpTriangulationController = function(){
   triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Manifold");
   triangulationController.onFinishChange(function(value){
+    g_triangulation = value;
     var j;
-    for(j=0;j<weightsBasis.length;j++){ 
+    for(j=0;j<g_weightsBasis.length;j++){ 
       triangFolder.remove(surfaceController[j]); 
     }
+    triangFolder.remove(geometryController);
     resetPosition();
-    setUpTriangulation(value);  // sets weightsBasis to new values
+
+    setUpTriangulation(g_triangulation);  // sets g_weightsBasis and g_geomNames to new values
+    if(guiInfo.geometryIndex > g_numGeoms - 1){
+      guiInfo.geometryIndex = 0;
+    }
+    setUpGeometry(g_triangulation, guiInfo.geometryIndex);
     sendGluingData();
-    setUpSurface(value, g_surfaceCoeffs);
+    setUpSurface(g_triangulation, g_surfaceCoeffs);
     sendWeights();
+    setUpGeometryController();
     setUpSurfaceControllers();
+  });
+}
+
+var setUpGeometryController = function(){
+  geometryController = triangFolder.add(guiInfo, 'geometryIndex', g_geomNames).name("Filling");
+  geometryController.onFinishChange(function(value){
+    setUpGeometry(guiInfo.triangulation, value);
+    sendGluingData();
   });
 }
 
@@ -87,6 +105,7 @@ var initGui = function(){
     },
     censusIndex: g_census_index,
     triangulation: g_triangulation,
+    geometryIndex: 0,
     surfaceCoeffs0: 1.0,
     surfaceCoeffs1: 0.0,
     surfaceCoeffs2: 0.0,
@@ -105,14 +124,14 @@ var initGui = function(){
     viewMode:0,
     subpixelCount:1,
     edgeThickness:0.0,
-    screenshotWidth: g_screenShotResolution.x,
-    screenshotHeight: g_screenShotResolution.y,
+    screenshotSize: 0,
     resetPosition: function(){   
       resetPosition();
     },
     TakeSS: function(){
       takeScreenshot();
     },
+    recording: false,
     fov:90,
     zoomFactor:1.0,
     logClippingRadius:-2.0,
@@ -130,6 +149,7 @@ var initGui = function(){
   triangFolder.open();
   // triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Manifold");
   // triangulationController added later
+  // geometryController added later
   // surfaceController added later
   // view mode -------------------------------------------------
   var viewModeController = gui.add(guiInfo, 'viewMode', {'Cohomology': 0, 'Distance': 1, 'Tetrahedron num': 2}).name("View mode");
@@ -152,28 +172,54 @@ var initGui = function(){
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
   // screenshots -----------------------------------------------
   var screenshotFolder = gui.addFolder('Screenshot');
-  var widthController = screenshotFolder.add(guiInfo, 'screenshotWidth');
-  var heightController = screenshotFolder.add(guiInfo, 'screenshotHeight');
+  var screenshotSizeController = screenshotFolder.add(guiInfo, 'screenshotSize', {'1000x1000': 0, '1920x1080': 1, '4096x4096': 2});
+  // var widthController = screenshotFolder.add(guiInfo, 'screenshotWidth');
+  // var heightController = screenshotFolder.add(guiInfo, 'screenshotHeight');
   screenshotFolder.add(guiInfo, 'TakeSS').name("Take Screenshot");
+  var recordingController = screenshotFolder.add(guiInfo, 'recording').name("Record video");
   // extras ----------------------------------------------------
   var subpixelCountController = gui.add(guiInfo, 'subpixelCount', {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5}).name("Subpixel count");
 
   // ------------------------------
   // UI Controllers
   // ------------------------------
-  widthController.onFinishChange(function(value){
-    g_screenShotResolution.x = value;
+  
+  screenshotSizeController.onFinishChange(function(value){
+    if(value == 0){
+      g_screenShotResolution.x = 1000;
+      g_screenShotResolution.y = 1000;
+    }
+    else if(value == 1){
+      g_screenShotResolution.x = 1920;
+      g_screenShotResolution.y = 1080;
+    }
+    else if(value == 2){
+      g_screenShotResolution.x = 4096;
+      g_screenShotResolution.y = 4096;
+    }
   });
 
-  heightController.onFinishChange(function(value){
-    g_screenShotResolution.y = value;
-  });
+  recordingController.onFinishChange(function(value){
+    if(value == true){
+      g_material.uniforms.screenResolution.value.x = g_screenShotResolution.x;
+      g_material.uniforms.screenResolution.value.y = g_screenShotResolution.y;
+      g_effect.setSize(g_screenShotResolution.x, g_screenShotResolution.y);
+      capturer = new CCapture( { format: 'jpg' } );
+      capturer.start();
+    }
+    else{
+      capturer.stop();
+      capturer.save();
+      onResize(); //Resets us back to window size
+    }
+  }); 
 
   censusController.onFinishChange(function(value){
     var j;
-    for(j=0;j<weightsBasis.length;j++){ 
+    for(j=0;j<g_weightsBasis.length;j++){ 
       triangFolder.remove(surfaceController[j]); 
     }
+    triangFolder.remove(geometryController);
     triangFolder.remove(triangulationController);
 
     g_census_index = value;
@@ -184,17 +230,22 @@ var initGui = function(){
 
     guiInfo.triangulation = triangulationKeys[0];
     g_triangulation = guiInfo.triangulation;
-    setUpTriangulation(g_triangulation);
+    setUpTriangulation(g_triangulation);  // sets g_weightsBasis and g_geomNames to new values
+    if(guiInfo.geometryIndex > g_numGeoms - 1){
+      guiInfo.geometryIndex = 0;
+    }
+    setUpGeometry(g_triangulation, guiInfo.geometryIndex);
     sendGluingData();
     setUpSurface(g_triangulation, g_surfaceCoeffs);
     sendWeights();
     // seems like we have to recursively renew all of the controller ui    
     setUpTriangulationController();
+    setUpGeometryController();
     setUpSurfaceControllers();
   });
 
   setUpTriangulationController();
-
+  setUpGeometryController();
   setUpSurfaceControllers();
 
   gradientController.onFinishChange(function(value){
@@ -281,8 +332,6 @@ var initGui = function(){
     g_material.uniforms.subpixelCount.value = value;
   });
 
-
-
   zoomController.onChange(function(value){
     g_material.uniforms.zoomFactor.value = 1.0/value;
   });
@@ -294,5 +343,4 @@ var initGui = function(){
   liftsController.onChange(function(value){
     g_material.uniforms.liftsThickness.value = value*value; // slower start
   });
-
 }

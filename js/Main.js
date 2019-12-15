@@ -1,6 +1,7 @@
 //-------------------------------------------------------
 // Global Variables
 //-------------------------------------------------------
+var canvas;
 var g_effect;
 var g_material;
 var g_controls;
@@ -19,8 +20,10 @@ var g_controllerDualPoints = [];
 
 var g_census_data;
 var g_census_index;
-var g_maxNumTet = 9;
-var weightsBasis;
+var g_maxNumTet = 7;
+var g_weightsBasis;
+var g_geomNames;
+var g_numGeoms;
 var planes; 
 var other_tet_nums; 
 var entering_face_nums; 
@@ -80,13 +83,13 @@ var init = function(){
 	  time = Date.now();
 	  // textFPS = document.getElementById('fps');
     scene = new THREE.Scene();
-    var canvas  = document.createElement('canvas');
+    canvas  = document.createElement('canvas');
     var context = canvas.getContext('webgl2');
     renderer = new THREE.WebGLRenderer({canvas: canvas, context: context});
     document.body.appendChild(renderer.domElement);
     g_screenResolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
     // g_screenShotResolution = new THREE.Vector2(12288,24576);  //12288,24576 //4096,4096 //window.innerWidth, window.innerHeight); 
-    g_screenShotResolution = new THREE.Vector2(4096,4096);  
+    g_screenShotResolution = new THREE.Vector2(1000,1000);  
     g_effect = new THREE.VREffect(renderer);
     camera = new THREE.OrthographicCamera(-1,1,1,-1,1/Math.pow(2,53),1);
     g_controls = new THREE.Controls();
@@ -148,6 +151,7 @@ var loadStuff = function(){
     g_census_data[0] = JSON.parse(data);    
     loadShaders();  // can only set up everything else once we have the default data loaded
     setUpTriangulation(g_triangulation);
+    setUpGeometry(g_triangulation, 0);
     setUpSurface(g_triangulation, g_surfaceCoeffs);
     //Setup dat GUI --- SceneManipulator.js
     initGui();
@@ -156,25 +160,41 @@ var loadStuff = function(){
 
 var setUpTriangulation = function(triangulation){
   var triang_data = g_census_data[g_census_index][triangulation];
-
-  planes = [];
   other_tet_nums = [];
   entering_face_nums = [];
-  SO31tsfms = [];
-  
-  var data_length = triang_data[0].length;
+  var data_length = triang_data["other_tet_nums"].length;
   var i;
   for(i=0;i<4*g_maxNumTet;i++){
-    planes.push(array2vector4(triang_data[0][i%data_length]));  // pad out the extra space in the array 
-    other_tet_nums.push(triang_data[1][i%data_length]);
-    entering_face_nums.push(triang_data[2][i%data_length]);
-    SO31tsfms.push(array2matrix4(triang_data[3][i%data_length]));
+    // planes.push(array2vector4(triang_data[0][i%data_length]));  // pad out the extra space in the array 
+    other_tet_nums.push(triang_data["other_tet_nums"][i%data_length]);
+    entering_face_nums.push(triang_data["entering_face_nums"][i%data_length]);
+    // SO31tsfms.push(array2matrix4(triang_data[3][i%data_length]));
   }   
-  weightsBasis = [];
+  g_weightsBasis = [];
   var j;
-  for(j=0;j<triang_data[4].length;j++){
-    weightsBasis.push(triang_data[4][j][0].toString())  // only used for names
+  for(j=0;j<triang_data["flat_cohom_classes"].length;j++){
+    g_weightsBasis.push(triang_data["flat_cohom_classes"][j][0].toString())  // only used for names
   }
+  g_geomNames = {};
+  var k;
+  g_numGeoms = triang_data["flat_geometries"].length;
+  for(k=0;k<g_numGeoms;k++){
+    var name = triang_data["flat_geometries"][k][0];
+    g_geomNames[name] = k;  // only used for names
+  }
+}
+
+var setUpGeometry = function(triangulation, geometryIndex){
+  var triang_data = g_census_data[g_census_index][triangulation];
+  var geom_data = triang_data["flat_geometries"][geometryIndex];
+  planes = [];
+  SO31tsfms = [];
+  var data_length = triang_data["other_tet_nums"].length;
+  var i;
+  for(i=0;i<4*g_maxNumTet;i++){
+    planes.push(array2vector4(geom_data[1][i%data_length]));  // pad out the extra space in the array 
+    SO31tsfms.push(array2matrix4(geom_data[2][i%data_length]));
+  }   
 }
 
 var setUpSurface = function(triangulation, surfaceCoeffs){ // surfaceCoeffs is a list of floats...
@@ -185,11 +205,11 @@ var setUpSurface = function(triangulation, surfaceCoeffs){ // surfaceCoeffs is a
   for(i=0;i<4*g_maxNumTet;i++){
     weights.push(0.0);
   }
-  var data_length = triang_data[0].length;
+  var data_length = triang_data["flat_cohom_classes"][0][1].length;
   var j;
-  for(j=0;j<triang_data[4].length;j++){
+  for(j=0;j<triang_data["flat_cohom_classes"].length;j++){
     for(i=0;i<4*g_maxNumTet;i++){
-      weights[i] = weights[i] + surfaceCoeffs[j]*triang_data[4][j][1][i%data_length]
+      weights[i] = weights[i] + surfaceCoeffs[j]*triang_data["flat_cohom_classes"][j][1][i%data_length]
     }
   }
 }

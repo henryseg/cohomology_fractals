@@ -151,7 +151,7 @@ function takeScreenshot() {
     // Without 'preserveDrawingBuffer' set to true, we must render now
     g_material.uniforms.maxDist.value = maxDist + Math.log(g_screenShotResolution.x/window.innerWidth); 
     // resolution goes up, we need to look further to get the same sharpness of the image
-    var numTiles = new THREE.Vector2().copy(g_screenShotResolution).divideScalar(4096).round();
+    var numTiles = new THREE.Vector2().copy(g_screenShotResolution).divideScalar(4096.0).ceil();
     g_material.uniforms.numTiles.value.x = numTiles.x;
     g_material.uniforms.numTiles.value.y = numTiles.y;
     var tileResolution = new THREE.Vector2().copy(g_screenShotResolution).divide(numTiles).round();
