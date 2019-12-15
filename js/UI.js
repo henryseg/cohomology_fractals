@@ -172,10 +172,10 @@ var initGui = function(){
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
   // screenshots -----------------------------------------------
   var screenshotFolder = gui.addFolder('Screenshot');
-  var screenshotSizeController = screenshotFolder.add(guiInfo, 'screenshotSize', {'1000x1000': 0, '1920x1080': 1, '4096x4096': 2});
+  var screenshotSizeController = screenshotFolder.add(guiInfo, 'screenshotSize', {'1000x1000': 0, '1920x1080': 1, '4096x4096': 2}).name("Screenshot size");
   // var widthController = screenshotFolder.add(guiInfo, 'screenshotWidth');
   // var heightController = screenshotFolder.add(guiInfo, 'screenshotHeight');
-  screenshotFolder.add(guiInfo, 'TakeSS').name("Take Screenshot");
+  screenshotFolder.add(guiInfo, 'TakeSS').name("Take screenshot");
   var recordingController = screenshotFolder.add(guiInfo, 'recording').name("Record video");
   // extras ----------------------------------------------------
   var subpixelCountController = gui.add(guiInfo, 'subpixelCount', {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5}).name("Subpixel count");
