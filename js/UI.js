@@ -73,7 +73,9 @@ var setUpTriangulationController = function(){
     for(j=0;j<g_weightsBasis.length;j++){ 
       triangFolder.remove(surfaceController[j]); 
     }
-    triangFolder.remove(geometryController);
+    if(g_numGeoms > 1){
+      triangFolder.remove(geometryController);
+    }
     resetPosition();
 
     setUpTriangulation(g_triangulation);  // sets g_weightsBasis and g_geomNames to new values
@@ -84,7 +86,9 @@ var setUpTriangulationController = function(){
     sendGluingData();
     setUpSurface(g_triangulation, g_surfaceCoeffs);
     sendWeights();
-    setUpGeometryController();
+    if(g_numGeoms > 1){
+      setUpGeometryController();
+    }
     setUpSurfaceControllers();
   });
 }
@@ -219,7 +223,9 @@ var initGui = function(){
     for(j=0;j<g_weightsBasis.length;j++){ 
       triangFolder.remove(surfaceController[j]); 
     }
-    triangFolder.remove(geometryController);
+    if(g_numGeoms > 1){
+      triangFolder.remove(geometryController);
+    }
     triangFolder.remove(triangulationController);
 
     g_census_index = value;
@@ -240,12 +246,16 @@ var initGui = function(){
     sendWeights();
     // seems like we have to recursively renew all of the controller ui    
     setUpTriangulationController();
-    setUpGeometryController();
+    if(g_numGeoms > 1){
+      setUpGeometryController();
+    }
     setUpSurfaceControllers();
   });
 
   setUpTriangulationController();
-  setUpGeometryController();
+  if(g_numGeoms > 1){
+    setUpGeometryController();
+  }
   setUpSurfaceControllers();
 
   gradientController.onFinishChange(function(value){
