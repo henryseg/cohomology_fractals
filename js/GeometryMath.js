@@ -155,16 +155,18 @@ function fixOutsideTetrahedron() {
       entry_face = entering_face_nums[ index ];
       console.log(['exiting tet', g_tet_num]);
       console.log(['exit face', biggest_face]);  
-      
+      console.log(['weight change', weights[ index ]]);
+
       g_tet_num = other_tet_nums[ index ];
       g_material.uniforms.tetNum.value = g_tet_num;
       g_currentWeight += weights[ index ];
       g_material.uniforms.currentWeight.value = g_currentWeight;
       g_currentBoost.multiply(SO31tsfms[ index ]);
 
+      console.log(['currentWeight', g_currentWeight]);
       console.log(['entering tet', g_tet_num]);
       console.log(['entry face', entry_face]);
-      console.log(['amountOutsideTetrahedron(get_pos())', amountOutsideTetrahedron(get_pos())[0]]);
+      // console.log(['amountOutsideTetrahedron(get_pos())', amountOutsideTetrahedron(get_pos())[0]]);
 
       out = amountOutsideTetrahedron(get_pos());
       amount_outside = out[0];

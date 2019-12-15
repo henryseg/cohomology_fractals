@@ -108,13 +108,12 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum, float
         // in fact pow(sinh(radius in hyperbolic units),2.0). However, sinh^2 is monotonic for 
         // positive values so we get correct behaviour by comparing without the sinh^2. 
       index = 4*tetNum + exit_face;
-      // if(viewMode == 2){ total_face_weight += abs(weights[ index ]); }
-      // else{ 
       total_face_weight += weights[ index ]; 
       if(liftsThickness > 0.0){ 
-        if( ( total_face_weight <= liftsThickness && liftsThickness < inputWeight )       || 
-                  ( inputWeight <= 0.0            &&            0.0 < total_face_weight ) ||
-            ( 0.0 < inputWeight && inputWeight <= liftsThickness && inputWeight != total_face_weight) ) { 
+        if( ( total_face_weight <= liftsThickness && liftsThickness < inputWeight ) || 
+                  ( inputWeight < 0.0001          &&         0.0001 < total_face_weight ) ||  // cannot make this too close to 0.0 or we get floating point issues from different sums of weights
+            ( 0.0001 < inputWeight && inputWeight <= liftsThickness && inputWeight != total_face_weight) 
+                  ) { 
           return_type = 1; 
           break; 
         } 
@@ -127,9 +126,9 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum, float
       init_pt = new_pt * tsfm;  
       init_dir = R31_normalise( new_dir * tsfm ); 
     }
-    if(return_type == 0){ return total_face_weight; } // Cannon-Thurston or Surface Colouring
+    if(return_type == 0){ return total_face_weight; } // Cohomology
     else if(return_type == 1){ return 0.5*maxDist - dist_to_go; } // Colour by Distance
-    else{ return float(tetNum);} // Colour by tetrahedron number
+    else { return float(tetNum);} // Colour by tetrahedron number
 }
 
 /// --- Graph-trace code --- ///
@@ -163,7 +162,7 @@ float graph_trace(inout vec4 goal_pt, inout int tetNum, out mat4 tsfm){ // tsfm 
   int biggest_face;
   tsfm = mat4(1.0);
   for(int i=0; i<maxSteps; i++){
-      if ( amountOutsideTetrahedron(goal_pt, tetNum, biggest_face) > 0.0000001 && biggest_face != entry_face ){
+      if ( amountOutsideTetrahedron(goal_pt, tetNum, biggest_face) > 0.0 && biggest_face != entry_face ){ //0.0000001
         index = 4*tetNum + biggest_face;
         entry_face = entering_face_nums[ index ];
         tetNum = otherTetNums[ index ];
