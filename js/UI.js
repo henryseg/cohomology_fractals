@@ -50,7 +50,7 @@ var stripFillingInfo = function(s){
 }
 
 var setUpSurfaceController = function(i){
-  surfaceController[i] = triangFolder.add(guiInfo, 'surfaceCoeffs'.concat(i.toString()), -1.0,1.0).name(g_weightsBasis[i]);
+  surfaceController[i] = triangFolder.add(guiInfo, 'surfaceCoeffs'.concat(i.toString()), -1.0,1.0,0.01).name(g_weightsBasis[i]);
   surfaceController[i].onChange(function(value){  
     g_surfaceCoeffs[i] = value;
     setUpSurface(guiInfo.triangulation, g_surfaceCoeffs);
@@ -158,19 +158,19 @@ var initGui = function(){
   // view mode -------------------------------------------------
   var viewModeController = gui.add(guiInfo, 'viewMode', {'Cohomology': 0, 'Distance': 1, 'Tetrahedron num': 2}).name("View mode");
   // things to draw --------------------------------------------
-  var liftsController = gui.add(guiInfo, 'liftsThickness',0.0,2.0).name("Elevations");
-  var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.4).name("Edge thickness");
+  var liftsController = gui.add(guiInfo, 'liftsThickness',0.0,2.0,0.01).name("Elevations");
+  var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.4,0.01).name("Edge thickness");
   // colour options ------------------------------------------
   var colourFolder = gui.addFolder('Colour options');
   var gradientController = colourFolder.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4}).name("Colour scheme");  
-  var contrastController = colourFolder.add(guiInfo, 'contrast',-5.0,4.0).name("Contrast");
+  var contrastController = colourFolder.add(guiInfo, 'contrast',-5.0,4.0,0.01).name("Contrast");
   // view options
   var viewFolder = gui.addFolder('View options');
   var perspectiveTypeController = viewFolder.add(guiInfo, 'perspectiveType', {'Material': 0, 'Ideal': 1}).name("Perspective type");
-  var zoomController = viewFolder.add(guiInfo, 'zoomFactor',1.0,10.0).name("Zoom");
-  var stepsController = viewFolder.add(guiInfo, 'logMaxSteps', 0.0,7.0).name("Log max steps");
-  var distController = viewFolder.add(guiInfo, 'logMaxDist',-1.0,5.0).name("Log screen dist");
-  var clippingRadiusController = viewFolder.add(guiInfo, 'logClippingRadius',-2.0,2.0).name("Log clip radius");
+  var zoomController = viewFolder.add(guiInfo, 'zoomFactor',1.0,10.0,0.1).name("Zoom");
+  var stepsController = viewFolder.add(guiInfo, 'logMaxSteps', 0.0,7.0,0.1).name("Log max steps");
+  var distController = viewFolder.add(guiInfo, 'logMaxDist',-1.0,5.0,0.1).name("Log screen dist");
+  var clippingRadiusController = viewFolder.add(guiInfo, 'logClippingRadius',-2.0,2.0,0.01).name("Log clip radius");
     // movement controls -----------------------------------------
   var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Move speed");
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
@@ -208,7 +208,7 @@ var initGui = function(){
       g_material.uniforms.screenResolution.value.x = g_screenShotResolution.x;
       g_material.uniforms.screenResolution.value.y = g_screenShotResolution.y;
       g_effect.setSize(g_screenShotResolution.x, g_screenShotResolution.y);
-      capturer = new CCapture( { format: 'jpg' } );
+      capturer = new CCapture( { format: 'jpg', quality: 85 } );
       capturer.start();
     }
     else{
@@ -320,7 +320,7 @@ var initGui = function(){
   perspectiveTypeController.onChange(function(value){
     g_material.uniforms.perspectiveType.value = value;
     if(value == 0){
-      fovController = viewFolder.add(guiInfo, 'fov',30,180).name("FOV");
+      fovController = viewFolder.add(guiInfo, 'fov',30,180,1).name("FOV");
       fovController.onChange(function(value){
         g_material.uniforms.fov.value = value;
       });
