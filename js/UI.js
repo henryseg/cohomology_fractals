@@ -50,7 +50,7 @@ var stripFillingInfo = function(s){
 }
 
 var setUpSurfaceController = function(i){
-  surfaceController[i] = triangFolder.add(guiInfo, 'surfaceCoeffs'.concat(i.toString()), -1.0,1.0,0.01).name(g_weightsBasis[i]);
+  surfaceController[i] = triangFolder.add(guiInfo, 'surfaceCoeffs'.concat(i.toString()), -1.0,1.0,0.1).name(g_weightsBasis[i]);
   surfaceController[i].onChange(function(value){  
     g_surfaceCoeffs[i] = value;
     setUpSurface(guiInfo.triangulation, g_surfaceCoeffs);
