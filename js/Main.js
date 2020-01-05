@@ -20,7 +20,7 @@ var g_controllerDualPoints = [];
 
 var g_census_data;
 var g_census_index;
-var g_maxNumTet = 9;
+var g_maxNumTet = 11;
 var g_weightsBasis;
 var g_geomNames;
 var g_numGeoms;
