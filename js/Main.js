@@ -140,10 +140,10 @@ var loadStuff = function(){
     loader4.load('data/cohomology_data_SV_v.json',function(data){
     g_census_data[2] = JSON.parse(data); 
   });
-  // var loader5 = new THREE.FileLoader();
-  //   loader5.load('data/cohomology_data_closed_cool_examples.json',function(data){
-  //   g_census_data[3] = JSON.parse(data); 
-  // });
+  var loader5 = new THREE.FileLoader();
+    loader5.load('data/cohomology_data_SV_cool.json',function(data){
+    g_census_data[3] = JSON.parse(data); 
+  });
         
   // and asynchronously load the default census
   var loader2 = new THREE.FileLoader();

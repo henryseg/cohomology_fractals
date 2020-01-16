@@ -148,7 +148,7 @@ var initGui = function(){
   gui.close();
   gui.add(guiInfo, 'GetHelp').name("Help/About");
   // triangulation and surface ---------------------------------
-  var censusController = gui.add(guiInfo, 'censusIndex', {'m':0, 's':1, 'v':2}).name("Census");
+  var censusController = gui.add(guiInfo, 'censusIndex', {'m':0, 's':1, 'v':2, 'cool examples':3}).name("Census");
   triangFolder = gui.addFolder('Manifold and cohomology class');
   triangFolder.open();
   // triangulationController = triangFolder.add(guiInfo, 'triangulation', triangulationDict).name("Manifold");
