@@ -162,7 +162,7 @@ var initGui = function(){
   var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.4,0.01).name("Edge thickness");
   // colour options ------------------------------------------
   var colourFolder = gui.addFolder('Colour options');
-  var gradientController = colourFolder.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4}).name("Colour scheme");  
+  var gradientController = colourFolder.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4, 'Greyscale': 5}).name("Colour scheme");  
   var contrastController = colourFolder.add(guiInfo, 'contrast',-5.0,4.0,0.01).name("Contrast");
   // view options
   var viewFolder = gui.addFolder('View options');
@@ -299,6 +299,14 @@ var initGui = function(){
                                                    new THREE.Vector3(239/255, 64/255, 80/255),  // warwick bright ruby red
                                                    // new THREE.Vector3(180/255, 21/255, 58/255),  // warwick ruby red
                                                    new THREE.Vector3(81/255, 28/255, 108/255),  // warwick aubergine
+                                                   new THREE.Vector3(0.0, 0.0, 0.0)];
+    }
+    else if(value == 5){ // Greyscale
+      g_material.uniforms.gradientThreshholds.value = [0.0, 1.000001, 1.000001, 1.000001, 1.000001];
+      g_material.uniforms.gradientColours.value = [new THREE.Vector3(1.0, 1.0, 1.0), 
+                                                   new THREE.Vector3(0.0, 0.0, 0.0),
+                                                   new THREE.Vector3(0.0, 0.0, 0.0),
+                                                   new THREE.Vector3(0.0, 0.0, 0.0), 
                                                    new THREE.Vector3(0.0, 0.0, 0.0)];
     }
   });

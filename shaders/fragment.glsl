@@ -109,10 +109,10 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum, float
         // positive values so we get correct behaviour by comparing without the sinh^2. 
       index = 4*tetNum + exit_face;
       total_face_weight += weights[ index ]; 
-      if(liftsThickness > 0.0){ 
-        if( ( total_face_weight <= liftsThickness && liftsThickness < inputWeight ) || 
-                  ( inputWeight < 0.0001          &&         0.0001 < total_face_weight ) ||  // cannot make this too close to 0.0 or we get floating point issues from different sums of weights
-            ( 0.0001 < inputWeight && inputWeight <= liftsThickness && inputWeight != total_face_weight) 
+      if(liftsThickness > 0.0){  // here we detect and draw elevations
+        if( ( total_face_weight <= liftsThickness && liftsThickness < inputWeight ) || // see elevations from behind
+                  ( inputWeight < 0.0001          &&         0.0001 < total_face_weight ) ||  // see elevations from in front // cannot make this too close to 0.0 or we get floating point issues from different sums of weights
+            ( 0.0001 < inputWeight && inputWeight <= liftsThickness && inputWeight != total_face_weight) // see elevations from in between
                   ) { 
           return_type = 1; 
           break; 
@@ -244,7 +244,18 @@ void main(){
   float weight = total_weight/float(subpixelCount*subpixelCount); // average over all subpixels
 
   weight = contrast * weight;
-  weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  //faster than atan, similar
+
+
+  // linear
+  // float minW = -5.0;
+  // float maxW = 5.0;
+  // weight = (weight - minW)/(maxW - minW);
+
+  // arctan
   // weight = 0.5 + atan(0.3 * weight)/PI;  // between 0.0 and 1.0
+  
+  // faster than atan, similar
+  weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  
+  
   out_FragColor = general_gradient(weight, gradientThreshholds, gradientColours);
 }
