@@ -194,18 +194,32 @@ vec4 general_gradient(float t, float threshholds[5], vec3 colours[5]){
 /// --- Ray init pt and directions code --- ///
 
 vec4 get_ray_pos_dir_material(vec2 xy, out vec4 ray_dir){ 
-    xy = 0.2 * xy;
-    float z = 0.1/tan(radians(fov*0.5));
+    float z = 0.5/tan(radians(fov*0.5));
     ray_dir = R31_normalise(vec4(xy,-z,0.0));
     return vec4(0.0,0.0,0.0,1.0);
 }
 
 vec4 get_ray_pos_dir_ideal(vec2 xy, out vec4 ray_dir){ 
     float foo = 0.5*dot(xy, xy);
-    vec4 ray_pt = vec4(xy.x, xy.y, foo, foo + 1.0);   // parabolic transformation magic by Saul
-    ray_dir = vec4(xy.x, xy.y, foo - 1.0, foo);
+    vec4 ray_pt = vec4(xy, foo, foo + 1.0);   // parabolic transformation magic by Saul
+    ray_dir = vec4(xy, foo - 1.0, foo);
     return ray_pt;
 }
+
+vec4 get_ray_pos_dir_hyperideal(vec2 xy, out vec4 ray_dir){ 
+    float fov_scale = (fov/90.0);
+    vec4 ray_pt = R31_normalise(vec4(fov_scale * xy,0.0,1.0));
+    if (R31_dot(ray_pt, ray_pt) < 0.0){
+      ray_dir = vec4(0.0,0.0,-1.0,0.0);
+    }
+    else{
+      ray_dir = vec4(0.0,0.0,0.0,0.0);
+      ray_pt = vec4(0.0,0.0,0.0,1.0);
+    }
+    return ray_pt;
+}
+
+//new_dir = init_dir + R31_dot(init_dir, new_pt) * new_pt;
 
 float get_signed_count(vec2 xy){
   vec4 init_pt;
@@ -214,7 +228,8 @@ float get_signed_count(vec2 xy){
   mat4 tsfm = mat4(1.0);
   int currentTetNum = tetNum;  // gets modified inside graph_trace
   if(perspectiveType == 0){ init_pt = get_ray_pos_dir_material(xy, init_dir); }
-  else{ init_pt = get_ray_pos_dir_ideal(xy, init_dir); }
+  else if(perspectiveType == 1){ init_pt = get_ray_pos_dir_ideal(xy, init_dir); }
+  else{ init_pt = get_ray_pos_dir_hyperideal(xy, init_dir); }
   init_pt *= currentBoost;
   init_dir *= currentBoost; 
   vec4 new_init_pt = pointOnGeodesic(init_pt, init_dir, clippingRadius);
@@ -247,8 +262,15 @@ void main(){
 
 
   // linear
-  // float minW = -5.0;
-  // float maxW = 5.0;
+  // float minW = -31.75;
+  // float maxW = 32.25;
+
+  // float minW = -63.75;
+  // float maxW = 64.25;
+
+  // float minW = -127.75;
+  // float maxW = 128.25;
+
   // weight = (weight - minW)/(maxW - minW);
 
   // arctan

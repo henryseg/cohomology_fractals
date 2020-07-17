@@ -163,10 +163,10 @@ var initGui = function(){
   // colour options ------------------------------------------
   var colourFolder = gui.addFolder('Colour options');
   var gradientController = colourFolder.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4, 'Greyscale': 5}).name("Colour scheme");  
-  var contrastController = colourFolder.add(guiInfo, 'contrast',-5.0,4.0,0.01).name("Contrast");
+  var contrastController = colourFolder.add(guiInfo, 'contrast',-5.0,4.0,0.1).name("Contrast");
   // view options
   var viewFolder = gui.addFolder('View options');
-  var perspectiveTypeController = viewFolder.add(guiInfo, 'perspectiveType', {'Material': 0, 'Ideal': 1}).name("Perspective type");
+  var perspectiveTypeController = viewFolder.add(guiInfo, 'perspectiveType', {'Material': 0, 'Ideal': 1, 'Hyperideal': 2}).name("Perspective type");
   var zoomController = viewFolder.add(guiInfo, 'zoomFactor',1.0,10.0,0.1).name("Zoom");
   var stepsController = viewFolder.add(guiInfo, 'logMaxSteps', 0.0,7.0,0.1).name("Log max steps");
   var distController = viewFolder.add(guiInfo, 'logMaxDist',-1.0,5.0,0.1).name("Log screen dist");
@@ -326,16 +326,16 @@ var initGui = function(){
   });
 
   perspectiveTypeController.onChange(function(value){
-    g_material.uniforms.perspectiveType.value = value;
-    if(value == 0){
-      fovController = viewFolder.add(guiInfo, 'fov',30,180,1).name("FOV");
+    if(g_material.uniforms.perspectiveType.value == 1){ // if it was Ideal we need to add fov slider
+      fovController = viewFolder.add(guiInfo, 'fov',0,180,1).name("FOV");
       fovController.onChange(function(value){
         g_material.uniforms.fov.value = value;
       });
     }
-    else{
+    else if(value == 1){ // if it is now Ideal we need to remove the fov slider
       viewFolder.remove(fovController); 
     }
+    g_material.uniforms.perspectiveType.value = value; // update the perspective type
   });
 
   edgeThicknessController.onChange(function(value){
