@@ -120,14 +120,15 @@ var initGui = function(){
     surfaceCoeffs7: 0.0,
     gradientIndex: 0,
     toggleUI: true,
-    eToHScale:2.0,
-    logMaxDist:2.0,
-    logMaxSteps:4.6,
-    contrast:-1.2,
-    perspectiveType:1,
-    viewMode:0,
-    subpixelCount:1,
-    edgeThickness:0.0,
+    eToHScale: 2.0,
+    logMaxDist: 2.0,
+    logMaxSteps: 4.6,
+    contrast: 0.0,
+    normalised: true,
+    perspectiveType: 1,
+    viewMode: 0,
+    subpixelCount: 1,
+    edgeThickness: 0.0,
     screenshotSize: 0,
     resetPosition: function(){   
       resetPosition();
@@ -136,10 +137,10 @@ var initGui = function(){
       takeScreenshot();
     },
     recording: false,
-    fov:90,
-    zoomFactor:1.0,
-    logClippingRadius:-2.0,
-    liftsThickness:0.0
+    fov: 90,
+    zoomFactor: 1.0,
+    logClippingRadius: -2.0,
+    liftsThickness: 0.0
   };
 
   setUpTriangDict();
@@ -163,7 +164,8 @@ var initGui = function(){
   // colour options ------------------------------------------
   var colourFolder = gui.addFolder('Colour options');
   var gradientController = colourFolder.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4, 'Greyscale': 5}).name("Colour scheme");  
-  var contrastController = colourFolder.add(guiInfo, 'contrast',-5.0,4.0,0.1).name("Contrast");
+  var contrastController = colourFolder.add(guiInfo, 'contrast',-5.0,5.0,0.1).name("Contrast");
+  var normalisedController = colourFolder.add(guiInfo, 'normalised').name("Normalised");
   // view options
   var viewFolder = gui.addFolder('View options');
   var perspectiveTypeController = viewFolder.add(guiInfo, 'perspectiveType', {'Material': 0, 'Ideal': 1, 'Hyperideal': 2}).name("Perspective type");
@@ -323,6 +325,10 @@ var initGui = function(){
 
   contrastController.onChange(function(value){
     g_material.uniforms.contrast.value = Math.exp(value);
+  });
+
+  normalisedController.onChange(function(value){
+    g_material.uniforms.normalised.value = value;
   });
 
   perspectiveTypeController.onChange(function(value){

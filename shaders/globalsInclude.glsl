@@ -37,6 +37,7 @@ uniform float maxDist;
 uniform int subpixelCount;
 uniform float edgeThickness;
 uniform float contrast;
+uniform bool normalised;
 uniform int perspectiveType;
 uniform int viewMode;
 uniform int multiScreenShot;

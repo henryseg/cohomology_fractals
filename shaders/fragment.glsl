@@ -207,14 +207,14 @@ vec4 get_ray_pos_dir_ideal(vec2 xy, out vec4 ray_dir){
 }
 
 vec4 get_ray_pos_dir_hyperideal(vec2 xy, out vec4 ray_dir){ 
-    float fov_scale = (fov/90.0);
+    float fov_scale = (fov/90.0);  // perhaps this should be made better
     vec4 ray_pt = R31_normalise(vec4(fov_scale * xy,0.0,1.0));
     if (R31_dot(ray_pt, ray_pt) < 0.0){
       ray_dir = vec4(0.0,0.0,-1.0,0.0);
     }
     else{
       ray_dir = vec4(0.0,0.0,0.0,0.0);
-      ray_pt = vec4(0.0,0.0,0.0,1.0);
+      ray_pt = vec4(0.0,0.0,0.0,1.0);  // avoid jank
     }
     return ray_pt;
 }
@@ -257,6 +257,8 @@ void main(){
     }
   }
   float weight = total_weight/float(subpixelCount*subpixelCount); // average over all subpixels
+
+  if(normalised){ weight /= sqrt(maxDist); }
 
   weight = contrast * weight;
 
