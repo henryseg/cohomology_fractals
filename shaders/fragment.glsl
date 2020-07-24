@@ -207,8 +207,7 @@ vec4 get_ray_pos_dir_ideal(vec2 xy, out vec4 ray_dir){
 }
 
 vec4 get_ray_pos_dir_hyperideal(vec2 xy, out vec4 ray_dir){ 
-    float fov_scale = (fov/90.0);  // perhaps this should be made better
-    vec4 ray_pt = R31_normalise(vec4(fov_scale * xy,0.0,1.0));
+    vec4 ray_pt = R31_normalise(vec4(2.0 * xy,0.0,1.0));
     if (R31_dot(ray_pt, ray_pt) < 0.0){
       ray_dir = vec4(0.0,0.0,-1.0,0.0);
     }

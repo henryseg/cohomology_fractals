@@ -123,8 +123,8 @@ var initGui = function(){
     eToHScale: 2.0,
     logMaxDist: 2.0,
     logMaxSteps: 4.6,
-    contrast: 0.0,
-    normalised: true,
+    contrast: -1.2,
+    normalised: false,  // if true then the pictures exist in the limit, but they are all 0
     perspectiveType: 1,
     viewMode: 0,
     subpixelCount: 1,
@@ -332,16 +332,16 @@ var initGui = function(){
   });
 
   perspectiveTypeController.onChange(function(value){
-    if(g_material.uniforms.perspectiveType.value == 1){ // if it was Ideal we need to add fov slider
+    g_material.uniforms.perspectiveType.value = value; // update the perspective type
+    if(value == 0){ // if it is now material we need to add fov slider
       fovController = viewFolder.add(guiInfo, 'fov',0,180,1).name("FOV");
       fovController.onChange(function(value){
         g_material.uniforms.fov.value = value;
       });
     }
-    else if(value == 1){ // if it is now Ideal we need to remove the fov slider
+    else { // if it is now not material we need to remove the fov slider
       viewFolder.remove(fovController); 
     }
-    g_material.uniforms.perspectiveType.value = value; // update the perspective type
   });
 
   edgeThicknessController.onChange(function(value){
