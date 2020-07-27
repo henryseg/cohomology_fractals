@@ -206,14 +206,16 @@ vec4 get_ray_pos_dir_ideal(vec2 xy, out vec4 ray_dir){
     return ray_pt;
 }
 
-vec4 get_ray_pos_dir_hyperideal(vec2 xy, out vec4 ray_dir){ 
+vec4 get_ray_pos_dir_hyperideal(vec2 xy, out vec4 ray_dir, out bool background){ 
     vec4 ray_pt = R31_normalise(vec4(2.0 * xy,0.0,1.0));
     if (R31_dot(ray_pt, ray_pt) < 0.0){
       ray_dir = vec4(0.0,0.0,-1.0,0.0);
+      background = false;
     }
     else{
       ray_dir = vec4(0.0,0.0,0.0,0.0);
       ray_pt = vec4(0.0,0.0,0.0,1.0);  // avoid jank
+      background = true;
     }
     return ray_pt;
 }
@@ -224,11 +226,12 @@ float get_signed_count(vec2 xy){
   vec4 init_pt;
   vec4 init_dir;
   float weight = 0.0;
+  bool background = false;
   mat4 tsfm = mat4(1.0);
   int currentTetNum = tetNum;  // gets modified inside graph_trace
   if(perspectiveType == 0){ init_pt = get_ray_pos_dir_material(xy, init_dir); }
   else if(perspectiveType == 1){ init_pt = get_ray_pos_dir_ideal(xy, init_dir); }
-  else{ init_pt = get_ray_pos_dir_hyperideal(xy, init_dir); }
+  else{ init_pt = get_ray_pos_dir_hyperideal(xy, init_dir, background); }
   init_pt *= currentBoost;
   init_dir *= currentBoost; 
   vec4 new_init_pt = pointOnGeodesic(init_pt, init_dir, clippingRadius);
@@ -237,7 +240,8 @@ float get_signed_count(vec2 xy){
   weight = graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt. 
   // init_pt *= tsfm;  // the point gets moved back in graph_trace
   init_dir *= tsfm;  // move the direction back to here
-  return ray_trace(init_pt, init_dir, maxDist, currentTetNum, currentWeight + weight);
+  if (background){ return 0.0; }
+  else{ return ray_trace(init_pt, init_dir, maxDist, currentTetNum, currentWeight + weight); }
 }
 
 void main(){
