@@ -85,7 +85,7 @@ var init = function(){
     scene = new THREE.Scene();
     canvas  = document.createElement('canvas');
     var context = canvas.getContext('webgl2');
-    renderer = new THREE.WebGLRenderer({canvas: canvas, context: context});
+    renderer = new THREE.WebGLRenderer({canvas: canvas, context: context, powerPreference: "high-performance"});
     document.body.appendChild(renderer.domElement);
     g_screenResolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
     // g_screenShotResolution = new THREE.Vector2(12288,24576);  //12288,24576 //4096,4096 //window.innerWidth, window.innerHeight); 
