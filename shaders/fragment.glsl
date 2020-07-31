@@ -246,6 +246,7 @@ float get_signed_count(vec2 xy){
 
 void main(){
   vec2 xy = (gl_FragCoord.xy - 0.5*screenResolution.xy)/screenResolution.x;
+  xy.y *= -1.0; // the screen has the y-axis pointing downwards, which is wrong
   xy *= zoomFactor;
   if(multiScreenShot == 1){  // Return multiple 4096x4096 screenshots that can be combined in, e.g. Photoshop.
     // Here screenResolution is really tileResolution;

@@ -16,16 +16,16 @@ THREE.Controls = function(done){
     this.manualControls = {
         65 : {index: 1, sign: 1, active: 0},  // a
         68 : {index: 1, sign: -1, active: 0}, // d
-        87 : {index: 0, sign: 1, active: 0},  // w
-        83 : {index: 0, sign: -1, active: 0}, // s
+        87 : {index: 0, sign: -1, active: 0},  // w
+        83 : {index: 0, sign: 1, active: 0}, // s
         81 : {index: 2, sign: -1, active: 0}, // q
         69 : {index: 2, sign: 1, active: 0},  // e
         38 : {index: 3, sign: 1, active: 0},  // up
         40 : {index: 3, sign: -1, active: 0}, // down
         37 : {index: 4, sign: -1, active: 0}, // left
         39 : {index: 4, sign: 1, active: 0},   // right
-        222 : {index: 5, sign: 1, active: 0}, // single quote
-        191 : {index: 5, sign: -1, active: 0},   // fwd slash
+        222 : {index: 5, sign: -1, active: 0}, // single quote
+        191 : {index: 5, sign: 1, active: 0},   // fwd slash
     };
     
     this._init = function(){
