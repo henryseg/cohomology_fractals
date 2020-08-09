@@ -13,8 +13,6 @@ var g_currentBoost;
 var g_tet_num = 0;
 var g_currentWeight = 0.0;
 var g_stereoBoosts = [];
-// var g_cellBoost;
-// var g_invCellBoost;
 var g_screenResolution;
 var g_screenShotResolution;
 var g_controllerBoosts = [];
@@ -104,8 +102,9 @@ var init = function(){
     
     g_initial_tet_num = 0;
 
-    //g_initialBoost.fromArray([-0.028576681758293088, -0.12772926001674087, -1.0257640921179199, 0.2632933027694381, -0.13314316310276444, -1.0061187987903462, 0.08001745812834235, 0.19080076720406364, -0.9996356310435108, 0.11067514536890996, -0.013706615632872643, 0.10820468550989147, -0.1334733062191911, -0.20208609290642063, -0.24245130974265403, 1.057088714354284]);
-    
+    // close to Thurston's picture of a Cannon-Thurston map for m004. Use g_current_weight = 1.0
+    // g_initial_tet_num = 1;
+    // g_initialBoost.fromArray([0.9188138624171226, -0.009030861583285602, -0.9775334314698347, 0.894355678615615, -0.6791380035356505, 0.11913787803457078, -0.7311858615978433, 0.10027475270250989, 0.05742485207891856, 0.9945158511435357, 0.11997767892793922, -0.08218293772415575, 0.555648229775409, -0.0577682319209083, -0.7103513336953101, 1.347843144121199]); 
     
     // Nice initial position for cPcbbbiht_12
     // var temp = new THREE.Matrix4().makeRotationZ(Math.PI + Math.PI/3.0);
@@ -256,7 +255,7 @@ var finishInit = function(fShader){
 
       currentBoost:{type:"m4", value:g_currentBoost},
       tetNum:{type:"i", value:g_tet_num},
-      currentWeight:{type:"f", value:0.0},
+      currentWeight:{type:"f", value:g_currentWeight},
 
       maxSteps:{type:"i", value:maxSteps},
       maxDist:{type:"f", value:maxDist},
