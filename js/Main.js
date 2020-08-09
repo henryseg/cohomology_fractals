@@ -7,6 +7,8 @@ var g_material;
 var g_controls;
 var g_geometry;
 var g_rotation;
+var g_initialBoost;
+var g_initial_tet_num;
 var g_currentBoost;
 var g_tet_num = 0;
 var g_currentWeight = 0.0;
@@ -97,22 +99,32 @@ var init = function(){
     g_controllerBoosts.push(new THREE.Matrix4());
     g_controllerBoosts.push(new THREE.Matrix4());
     g_currentBoost = new THREE.Matrix4(); // boost for camera relative to tetrahedron
+    
+    g_initialBoost = new THREE.Matrix4();
+    
+    g_initial_tet_num = 0;
 
+    //g_initialBoost.fromArray([-0.028576681758293088, -0.12772926001674087, -1.0257640921179199, 0.2632933027694381, -0.13314316310276444, -1.0061187987903462, 0.08001745812834235, 0.19080076720406364, -0.9996356310435108, 0.11067514536890996, -0.013706615632872643, 0.10820468550989147, -0.1334733062191911, -0.20208609290642063, -0.24245130974265403, 1.057088714354284]);
+    
+    
     // Nice initial position for cPcbbbiht_12
     // var temp = new THREE.Matrix4().makeRotationZ(Math.PI + Math.PI/3.0);
-    // g_currentBoost.multiply(temp);
+    // g_initialBoost.set(temp);
 
     // Closed geodesic straight ahead initial position for cPcbbbiht_12
     // var temp = new THREE.Matrix4().makeRotationX(Math.PI/2.0);
-    // g_currentBoost.multiply(temp);
+    // g_initialBoost.set(temp);
 
     // Nice initial position for gLLAQbecdfffhhnkqnc_120012:
     // var temp = parabolicBy2DVector(new THREE.Vector2(0.5,0)).premultiply(new THREE.Matrix4().makeRotationZ(Math.PI + Math.PI/3.5));
-    // g_currentBoost.multiply(temp);
+    // g_initialBoost.set(temp);
 
     // Nice initial position for gLMzQbcdefffhhhhhit_122112
     // var temp = parabolicBy2DVector(new THREE.Vector2(0.7649484590167701,0.12594832555674987));
-    // g_currentBoost.multiply(temp);
+    // g_initialBoost.set(temp);
+
+    g_currentBoost.copy(g_initialBoost);
+    g_tet_num = g_initial_tet_num;
 
     // We need to load the shaders from file
     // since web is async we need to wait on this to finish
@@ -293,7 +305,6 @@ var finishInit = function(fShader){
   geom.addAttribute('position',new THREE.BufferAttribute(vertices,3));
   mesh = new THREE.Mesh(geom, g_material);
   scene.add(mesh);
-
   animate();
 }
 

@@ -26,12 +26,12 @@ var sendWeights = function(){
 }
 
 var resetPosition = function(){
-  g_tet_num = 0;
+  
+  g_tet_num = g_initial_tet_num;
   g_material.uniforms.tetNum.value = g_tet_num;
   g_currentWeight = 0.0;
   g_material.uniforms.currentWeight.value = g_currentWeight;
-  g_currentBoost.identity();
-  // g_currentBoost.makeRotationX(Math.PI/2.0);
+  g_currentBoost.copy(g_initialBoost);
   g_controllerBoosts[0].identity();
 }
 
@@ -101,6 +101,14 @@ var setUpGeometryController = function(){
   });
 }
 
+var logPosition = function(){
+  console.log(g_tet_num);
+  var temp = new THREE.Matrix4();
+  temp.copy(g_currentBoost);
+  //temp.transpose();  // because THREE.js does things strangely
+  console.log(temp.elements);
+}
+
 //What we need to init our dat GUI
 var initGui = function(){
   guiInfo = { //Since dat gui can only modify object values we store variables here.
@@ -133,6 +141,9 @@ var initGui = function(){
     resetPosition: function(){   
       resetPosition();
     },
+    logPosition: function(){
+      logPosition();
+    },
     TakeSS: function(){
       takeScreenshot();
     },
@@ -140,7 +151,7 @@ var initGui = function(){
     fov: 90,
     zoomFactor: 1.0,
     logClippingRadius: -2.0,
-    liftsThickness: 0.0
+    liftsThickness: 0.0,
   };
 
   setUpTriangDict();
@@ -185,6 +196,7 @@ var initGui = function(){
   var recordingController = screenshotFolder.add(guiInfo, 'recording').name("Record video");
   // extras ----------------------------------------------------
   var subpixelCountController = gui.add(guiInfo, 'subpixelCount', {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5}).name("Subpixel count");
+  gui.add(guiInfo, 'logPosition').name("Log Position");
 
   // ------------------------------
   // UI Controllers
