@@ -14,18 +14,18 @@ THREE.Controls = function(done){
     this.updateTime = 0;
     
     this.manualControls = {
-        65 : {index: 1, sign: 1, active: 0},  // a
-        68 : {index: 1, sign: -1, active: 0}, // d
-        87 : {index: 0, sign: -1, active: 0},  // w
-        83 : {index: 0, sign: 1, active: 0}, // s
-        81 : {index: 2, sign: -1, active: 0}, // q
-        69 : {index: 2, sign: 1, active: 0},  // e
-        38 : {index: 3, sign: 1, active: 0},  // up
-        40 : {index: 3, sign: -1, active: 0}, // down
-        37 : {index: 4, sign: -1, active: 0}, // left
-        39 : {index: 4, sign: 1, active: 0},   // right
-        222 : {index: 5, sign: -1, active: 0}, // single quote
-        191 : {index: 5, sign: 1, active: 0},   // fwd slash
+        37 : {index: 1, sign: 1, active: 0},  // left arrow - yaw left
+        39 : {index: 1, sign: -1, active: 0}, // right arrow - yaw right
+        38 : {index: 0, sign: 1, active: 0},  // up arrow - pitch up
+        40 : {index: 0, sign: -1, active: 0}, // down arrow - pitch down
+        90 : {index: 2, sign: -1, active: 0}, // z - roll left
+        88 : {index: 2, sign: 1, active: 0},  // x - roll right
+        87 : {index: 3, sign: 1, active: 0},  // w - forward
+        83 : {index: 3, sign: -1, active: 0}, // s - backward
+        65 : {index: 4, sign: -1, active: 0}, // a - strafe left
+        68 : {index: 4, sign: 1, active: 0},   // d - strafe right
+        69 : {index: 5, sign: 1, active: 0}, // e - strafe up
+        67 : {index: 5, sign: -1, active: 0},   // c - strafe down
     };
     
     this._init = function(){
