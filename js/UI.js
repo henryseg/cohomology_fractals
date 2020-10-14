@@ -282,7 +282,7 @@ var initGui = function(){
                                                    new THREE.Vector3(0.0, 0.0, 0.0)];
     }
     else if(value == 1){ // Warm
-      g_material.uniforms.gradientThreshholds.value = [0.0, 0.3, 0.65, 0.85, 1,000001];
+      g_material.uniforms.gradientThreshholds.value = [0.0, 0.3, 0.65, 0.85, 1.000001];
       g_material.uniforms.gradientColours.value = [new THREE.Vector3(1.0, 1.0, 1.0), 
                                                    new THREE.Vector3(0.99607, 0.92156, 0.39607), 
                                                    new THREE.Vector3(0.89411, 0.32156, 0.10588), 
