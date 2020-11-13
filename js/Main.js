@@ -39,6 +39,8 @@ var g_triangulation;
 var g_surfaceCoeffs;
 var g_census = 0;
 
+var g_framenumber = 0;
+
 //-------------------------------------------------------
 // Scene Variables
 //-------------------------------------------------------
@@ -152,7 +154,8 @@ var loadStuff = function(){
     g_census_data[2] = JSON.parse(data); 
   });
   var loader5 = new THREE.FileLoader();
-    loader5.load('data/cohomology_data_SV_cool.json',function(data){
+    // loader5.load('data/cohomology_data_SV_cool.json',function(data){
+    loader5.load('data/cohomology_data_SV_special.json',function(data){
     g_census_data[3] = JSON.parse(data); 
   });
         

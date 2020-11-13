@@ -74,58 +74,71 @@ THREE.Controls = function(done){
         var newTime = Date.now();
         this.updateTime = newTime;
 
+
         //--------------------------------------------------------------------
         // Translation
         //--------------------------------------------------------------------
         //TODO: Beautify
         var deltaTime = (newTime - oldTime) * 0.001;
-        var deltaPosition = new THREE.Vector3();
-        if(vrState !== null && vrState.hmd.lastPosition !== undefined && vrState.hmd.position[0] !== 0){
-            var quat = vrState.hmd.rotation.clone().inverse();
-            deltaPosition = new THREE.Vector3().subVectors(vrState.hmd.position, vrState.hmd.lastPosition).applyQuaternion(quat);
-        }
+        // var deltaPosition = new THREE.Vector3();
+        // if(vrState !== null && vrState.hmd.lastPosition !== undefined && vrState.hmd.position[0] !== 0){
+        //     var quat = vrState.hmd.rotation.clone().inverse();
+        //     deltaPosition = new THREE.Vector3().subVectors(vrState.hmd.position, vrState.hmd.lastPosition).applyQuaternion(quat);
+        // }
 
-        var controllerMove = 0;
-        if(g_controllerMove){ controllerMove = 1; }
+        // var controllerMove = 0;
+        // if(g_controllerMove){ controllerMove = 1; }
 
-        if(this.manualMoveRate[0] !== 0 || this.manualMoveRate[1] !== 0 || this.manualMoveRate[2] !== 0 || controllerMove !== 0){
-            deltaPosition = getFwdVector().multiplyScalar(speed * deltaTime * (this.manualMoveRate[0] + controllerMove)).add(
-                getRightVector().multiplyScalar(speed  * deltaTime * this.manualMoveRate[1])).add(
-                getUpVector().multiplyScalar(speed  * deltaTime * this.manualMoveRate[2]));
-        }
-        if(deltaPosition !== undefined){
-            deltaPosition.multiplyScalar(guiInfo.eToHScale);
-            var m = translateByVector(deltaPosition);
-            // console.log(m);
-            g_currentBoost.premultiply(m);
-        }
+        // if(this.manualMoveRate[0] !== 0 || this.manualMoveRate[1] !== 0 || this.manualMoveRate[2] !== 0 || controllerMove !== 0){
+        //     deltaPosition = getFwdVector().multiplyScalar(speed * deltaTime * (this.manualMoveRate[0] + controllerMove)).add(
+        //         getRightVector().multiplyScalar(speed  * deltaTime * this.manualMoveRate[1])).add(
+        //         getUpVector().multiplyScalar(speed  * deltaTime * this.manualMoveRate[2]));
+        // }
+        // if(deltaPosition !== undefined){
+        //     deltaPosition.multiplyScalar(guiInfo.eToHScale);
+        //     var m = translateByVector(deltaPosition);
+        //     // console.log(m);
+        //     g_currentBoost.premultiply(m);
+        // }
+
+        // update g_currentBoost
+
+        var t = g_framenumber * 0.01;
+        var position = new THREE.Vector3(0, 0, Math.cos(t));
+
+        g_currentBoost.copy(translateByVector(position));
+        // console.log(g_currentBoost);
+  
+        // (for now, don't expect to leave the tetrahedron)
 
         // fix things if we are outside of our tetrahedron...
-  
-        fixOutsideTetrahedron();
+        // fixOutsideTetrahedron();
 
         //--------------------------------------------------------------------
         // Rotation
         //--------------------------------------------------------------------
-        var deltaRotation = new THREE.Quaternion(this.manualRotateRate[0] * speed * deltaTime,
-                                                 this.manualRotateRate[1] * speed * deltaTime,
-                                                 this.manualRotateRate[2] * speed * deltaTime, 1.0);
-        deltaRotation.normalize();
-        if(deltaRotation !== undefined){
-            g_rotation.multiply(deltaRotation);
-            m = new THREE.Matrix4().makeRotationFromQuaternion(deltaRotation.inverse());
-            g_currentBoost.premultiply(m);
-        }
+        // var deltaRotation = new THREE.Quaternion(this.manualRotateRate[0] * speed * deltaTime,
+        //                                          this.manualRotateRate[1] * speed * deltaTime,
+        //                                          this.manualRotateRate[2] * speed * deltaTime, 1.0);
+        // deltaRotation.normalize();
+        // if(deltaRotation !== undefined){
+        //     g_rotation.multiply(deltaRotation);
+        //     m = new THREE.Matrix4().makeRotationFromQuaternion(deltaRotation.inverse());
+        //     g_currentBoost.premultiply(m);
+        // }
 
-        if(vrState !== null && vrState.hmd.lastRotation !== undefined){
-            rotation = vrState.hmd.rotation;
-            deltaRotation.multiplyQuaternions(vrState.hmd.lastRotation.inverse(), vrState.hmd.rotation);
-            m = new THREE.Matrix4().makeRotationFromQuaternion(deltaRotation.inverse());
-            g_currentBoost.premultiply(m);
-        }
+        // if(vrState !== null && vrState.hmd.lastRotation !== undefined){
+        //     rotation = vrState.hmd.rotation;
+        //     deltaRotation.multiplyQuaternions(vrState.hmd.lastRotation.inverse(), vrState.hmd.rotation);
+        //     m = new THREE.Matrix4().makeRotationFromQuaternion(deltaRotation.inverse());
+        //     g_currentBoost.premultiply(m);
+        // }
 
+        var rotation = new THREE.Matrix4().makeRotationY(Math.PI*0.5*(1 - Math.cos(t)));
+        g_currentBoost.premultiply(rotation);
 
         g_currentBoost.gramSchmidt(g_geometry);
+        g_framenumber += 1;
     };
 
     this.zeroSensor = function(){
