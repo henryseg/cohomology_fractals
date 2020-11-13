@@ -204,8 +204,10 @@ var initGui = function(){
   
   screenshotSizeController.onFinishChange(function(value){
     if(value == 0){
-      g_screenShotResolution.x = 1000;
-      g_screenShotResolution.y = 1000;
+      // g_screenShotResolution.x = 1000;
+      // g_screenShotResolution.y = 1000;
+      g_screenShotResolution.x = 512;
+      g_screenShotResolution.y = 512;
     }
     else if(value == 1){
       g_screenShotResolution.x = 1920;
@@ -219,10 +221,13 @@ var initGui = function(){
 
   recordingController.onFinishChange(function(value){
     if(value == true){
+      g_material.uniforms.maxSteps.value = 1000;
       g_material.uniforms.screenResolution.value.x = g_screenShotResolution.x;
       g_material.uniforms.screenResolution.value.y = g_screenShotResolution.y;
       g_effect.setSize(g_screenShotResolution.x, g_screenShotResolution.y);
-      capturer = new CCapture( { format: 'jpg', quality: 85 } );
+      // capturer = new CCapture( { format: 'jpg', quality: 85 } );
+      capturer = new CCapture( { framerate: 50, format: 'png', timeLimit: (g_num_frames / 50)} );
+      g_starttime = Date.now();
       capturer.start();
     }
     else{

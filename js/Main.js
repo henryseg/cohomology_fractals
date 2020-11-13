@@ -29,17 +29,26 @@ var other_tet_nums;
 var entering_face_nums; 
 var SO31tsfms; 
 var weights; 
-var gradientThreshholds = [0.0, 0.25, 0.45, 0.75, 1.000001];
-var gradientColours = [new THREE.Vector3(1.0, 1.0, 1.0),  // cool
-                       new THREE.Vector3(0.86274, 0.92941, 0.78431), 
-                       new THREE.Vector3(0.25882, 0.70196, 0.83529), 
-                       new THREE.Vector3(0.10196, 0.13725, 0.49412), 
+// var gradientThreshholds = [0.0, 0.25, 0.45, 0.75, 1.000001];
+// var gradientColours = [new THREE.Vector3(1.0, 1.0, 1.0),  // cool
+//                        new THREE.Vector3(0.86274, 0.92941, 0.78431), 
+//                        new THREE.Vector3(0.25882, 0.70196, 0.83529), 
+//                        new THREE.Vector3(0.10196, 0.13725, 0.49412), 
+//                        new THREE.Vector3(0.0, 0.0, 0.0)];
+
+var gradientThreshholds = [0.0, 1.000001, 1.000001, 1.000001, 1.000001];
+var gradientColours = [new THREE.Vector3(1.0, 1.0, 1.0), // greyscale
+                       new THREE.Vector3(0.0, 0.0, 0.0),
+                       new THREE.Vector3(0.0, 0.0, 0.0),
+                       new THREE.Vector3(0.0, 0.0, 0.0), 
                        new THREE.Vector3(0.0, 0.0, 0.0)];
+
 var g_triangulation;
 var g_surfaceCoeffs;
 var g_census = 0;
 
-var g_framenumber = 0;
+const g_num_frames = 360;
+var g_starttime = 0.0;
 
 //-------------------------------------------------------
 // Scene Variables
@@ -91,7 +100,7 @@ var init = function(){
     document.body.appendChild(renderer.domElement);
     g_screenResolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
     // g_screenShotResolution = new THREE.Vector2(12288,24576);  //12288,24576 //4096,4096 //window.innerWidth, window.innerHeight); 
-    g_screenShotResolution = new THREE.Vector2(1000,1000);  
+    g_screenShotResolution = new THREE.Vector2(512,512);  
     g_effect = new THREE.VREffect(renderer);
     camera = new THREE.OrthographicCamera(-1,1,1,-1,1/Math.pow(2,53),1);
     g_controls = new THREE.Controls();
@@ -103,6 +112,10 @@ var init = function(){
     g_initialBoost = new THREE.Matrix4();
     
     g_initial_tet_num = 0;
+
+    // for animating t12047
+
+    g_currentWeight = 0.125;  // should be half way between the two colours of square we have
 
     // close to Thurston's picture of a Cannon-Thurston map for m004. Use g_current_weight = 1.0
     // g_initial_tet_num = 1;
@@ -141,7 +154,8 @@ var loadStuff = function(){
   g_census_data = [0,0,0]; // dummy place holders, will get replaced as we load them
   g_census_index = 0;
   ////// Default cusped
-  g_triangulation = 'm004';
+  // g_triangulation = 'm004';
+  g_triangulation = 't12047';
   g_surfaceCoeffs = [1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];  // pad with extra zeros
 
   // asynchronously load the non-default censuses
@@ -161,7 +175,8 @@ var loadStuff = function(){
         
   // and asynchronously load the default census
   var loader2 = new THREE.FileLoader();
-  loader2.load('data/cohomology_data_SV_m.json',function(data){
+  // loader2.load('data/cohomology_data_SV_m.json',function(data){
+  loader2.load('data/cohomology_data_SV_special.json',function(data){
     g_census_data[0] = JSON.parse(data);    
     loadShaders();  // can only set up everything else once we have the default data loaded
     setUpTriangulation(g_triangulation);

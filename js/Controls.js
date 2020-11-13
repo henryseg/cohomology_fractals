@@ -79,7 +79,7 @@ THREE.Controls = function(done){
         // Translation
         //--------------------------------------------------------------------
         //TODO: Beautify
-        var deltaTime = (newTime - oldTime) * 0.001;
+        // var deltaTime = (newTime - oldTime) * 0.001;
         // var deltaPosition = new THREE.Vector3();
         // if(vrState !== null && vrState.hmd.lastPosition !== undefined && vrState.hmd.position[0] !== 0){
         //     var quat = vrState.hmd.rotation.clone().inverse();
@@ -103,16 +103,45 @@ THREE.Controls = function(done){
 
         // update g_currentBoost
 
-        var t = g_framenumber * 0.01;
-        var position = new THREE.Vector3(0, 0, Math.cos(t));
+        // var t = g_framenumber / g_num_frames;  // goes from 0 to 1 in g_num_frames
+        var t = ( (Date.now() - g_starttime) % (20 * g_num_frames) ) / (20 * g_num_frames);
+        // 20 == 1000/fps = 1000/50, since Date.now() is in milliseconds
+
+        // var t = 0;
+        // console.log(t);
+
+        var param = 0.5 + 0.5*(-Math.cos(Math.PI*t)); // goes from 0 to 1 in g_num_frames, smoothed
+        var param2 = 0.5 + 0.5*(-Math.cos(2*Math.PI*t)); // goes from 0 to 1 to 0 in num_frames, smoothed
+        // var t2 = 2*Math.abs((t%1.0) - 0.5);
+        var t2 = 4*(t%1.0)*(1-(t%1.0));
+
+        // var position = new THREE.Vector3(0, 0, 2*cos_t);
+        // var position = new THREE.Vector3(0, 0, Math.log(Math.sqrt(128)));
+        // var position = new THREE.Vector3(0, 0, -Math.log(Math.sqrt(512)));
+        var init_d = Math.log(Math.sqrt(128));
+        var term_d = -Math.log(Math.sqrt(512));
+        var position = new THREE.Vector3(0, 0, init_d*(1-param) + term_d*param);
 
         g_currentBoost.copy(translateByVector(position));
+
+        var z_rotation = new THREE.Matrix4().makeRotationZ(Math.PI/4 + param*Math.PI/2);
+        g_currentBoost.premultiply(z_rotation);
+
+
+        // var rotation = new THREE.Matrix4().makeRotationY(Math.PI);
+        // g_currentBoost.premultiply(rotation);
+
         // console.log(g_currentBoost);
   
         // (for now, don't expect to leave the tetrahedron)
 
         // fix things if we are outside of our tetrahedron...
         // fixOutsideTetrahedron();
+
+        var maxDist = Math.exp(1.23 + 0.9*param2);  // get out near the true cohom frac
+        g_material.uniforms.maxDist.value = maxDist;
+
+        g_material.uniforms.contrast.value = Math.exp(8*(1-Math.pow(t2, 0.33)));
 
         //--------------------------------------------------------------------
         // Rotation
@@ -134,11 +163,10 @@ THREE.Controls = function(done){
         //     g_currentBoost.premultiply(m);
         // }
 
-        var rotation = new THREE.Matrix4().makeRotationY(Math.PI*0.5*(1 - Math.cos(t)));
+        var rotation = new THREE.Matrix4().makeRotationY(Math.PI*param);
         g_currentBoost.premultiply(rotation);
 
         g_currentBoost.gramSchmidt(g_geometry);
-        g_framenumber += 1;
     };
 
     this.zeroSensor = function(){
