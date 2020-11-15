@@ -138,7 +138,8 @@ THREE.Controls = function(done){
         // fix things if we are outside of our tetrahedron...
         // fixOutsideTetrahedron();
 
-        var maxDist = Math.exp(1.23 + 0.9*param2);  // get out near the true cohom frac
+        // var maxDist = Math.exp(1.23 + 0.9*param2);  // get out near the true cohom frac
+        var maxDist = Math.exp(1.23 + 0.1*param2);  // don't go out as far
         g_material.uniforms.maxDist.value = maxDist;
 
         g_material.uniforms.contrast.value = Math.exp(8*(1-Math.pow(t2, 0.33)));
