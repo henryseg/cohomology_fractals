@@ -263,8 +263,9 @@ void main(){
 
   if(normalised){ weight /= sqrt(maxDist); }
 
-  weight = contrast * weight;
+  weight = 1.0/weight; // inverse colours
 
+  weight = contrast * weight;
 
   // linear
   // float minW = -31.75;
