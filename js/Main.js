@@ -24,6 +24,7 @@ var g_maxNumTet = 11;
 var g_weightsBasis;
 var g_geomNames;
 var g_numGeoms;
+var shapes;
 var planes; 
 var other_tet_nums; 
 var entering_face_nums; 
@@ -198,13 +199,14 @@ var setUpTriangulation = function(triangulation){
 var setUpGeometry = function(triangulation, geometryIndex){
   var triang_data = g_census_data[g_census_index][triangulation];
   var geom_data = triang_data["flat_geometries"][geometryIndex];
+  shapes = geom_data[1];
   planes = [];
   SO31tsfms = [];
   var data_length = triang_data["other_tet_nums"].length;
   var i;
   for(i=0;i<4*g_maxNumTet;i++){
-    planes.push(array2vector4(geom_data[1][i%data_length]));  // pad out the extra space in the array 
-    SO31tsfms.push(array2matrix4(geom_data[2][i%data_length]));
+    planes.push(array2vector4(geom_data[2][i%data_length]));  // pad out the extra space in the array 
+    SO31tsfms.push(array2matrix4(geom_data[3][i%data_length]));
   }   
 }
 
