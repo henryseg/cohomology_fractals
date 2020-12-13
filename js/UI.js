@@ -76,7 +76,6 @@ var setUpTriangulationController = function(){
     if(g_numGeoms > 1){
       triangFolder.remove(geometryController);
     }
-    resetPosition();
 
     setUpTriangulation(g_triangulation);  // sets g_weightsBasis and g_geomNames to new values
     if(guiInfo.geometryIndex > g_numGeoms - 1){
@@ -90,6 +89,7 @@ var setUpTriangulationController = function(){
       setUpGeometryController();
     }
     setUpSurfaceControllers();
+    resetPosition();
   });
 }
 

@@ -75,6 +75,7 @@ function getUpVector() {
 //----------------------------------------------------------------------
 //	Matrix - Generators
 //----------------------------------------------------------------------
+
 function translateByVector(v) { // trickery stolen from Jeff Weeks' Curved Spaces app
   var dx = v.x; var dy = v.y; var dz = v.z;
   var len = Math.sqrt(dx*dx + dy*dy + dz*dz);
@@ -82,15 +83,14 @@ function translateByVector(v) { // trickery stolen from Jeff Weeks' Curved Space
     return new THREE.Matrix4().identity();
 
   dx /= len; dy /= len; dz /= len;
-	var m03 = dx; var m13 = dy; var m23 = dz;
-	var c1 = Math.sinh(len);
-	var c2 = Math.cosh(len) - 1;
+  var c1 = Math.sinh(len);
+  var c2 = Math.cosh(len) - 1;
 
   var m = new THREE.Matrix4().set(
-    0, 0, 0, m03,
-    0, 0, 0, m13,
-    0, 0, 0, m23,
-    dx,dy,dz, 0.0);
+    0, 0, 0, dx,
+    0, 0, 0, dy,
+    0, 0, 0, dz,
+    dx,dy,dz, 0);
   var m2 = new THREE.Matrix4().copy(m).multiply(m);
   m.multiplyScalar(c1);
   m2.multiplyScalar(c2);
@@ -100,7 +100,7 @@ function translateByVector(v) { // trickery stolen from Jeff Weeks' Curved Space
   return result;
 }
 
-function parabolicBy2DVector(v) {  
+function parabolicBy2DVector(v) {  /// translates our view
   var dx = v.x; 
   var dy = v.y;
   var r2 = 0.5*(dx*dx + dy*dy);
@@ -115,6 +115,105 @@ function parabolicBy2DVector(v) {
      dx,  dy,   r2, 1+r2);
     return result;
 }
+
+function parabolicRotate(theta) {    /// rotates our view
+  var s = Math.sin(theta);
+  var c = Math.cos(theta);
+    var result = new THREE.Matrix4().set(
+    c, -s, 0, 0,
+    s, c, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1);  // transpose... javascript, matrices... etc... but we are facing down the z axis...? Maybe?
+    return result;
+}
+
+function parabolicScale(r) {     /// scales our view
+  var v = new THREE.Vector3(0,0,Math.log(r))
+  return translateByVector(v);
+}
+
+// swap the vertices around
+
+function swap_inf_zero(zed){
+  var a = zed.x;
+  var b = zed.y;
+  var c = zed.z;
+  var d = zed.w;
+  var result = new THREE.Matrix4().set(
+  a,  b,  0,  0,
+  b, -a,  0,  0,
+  0,  0, -d,  c,
+  0,  0, -c,  d);
+  result.multiplyScalar(1.0 / (a*a + b*b));
+  result.transpose();
+  return result;
+}
+
+function swap_inf_one(zed){
+  var a = zed.x;
+  var b = zed.y;
+  var c = zed.z;
+  var d = zed.w;
+  var result = new THREE.Matrix4().set(
+  -a + c - d,         -b, -a - c + d,  a - c + d,
+          -b,  a + c - d,         -b,          b,
+  -a - c + d,         -b,         -c,          c,
+  -a + c - d,         -b,         -c,   -c + 2*d);
+  result.multiplyScalar(1.0 / (a*a + b*b));
+  result.transpose();
+  return result;
+}
+
+function swap_inf_zed(zed){  
+  var a = zed.x;
+  var b = zed.y;
+  var c = zed.z;
+  var d = zed.w;
+  var result = new THREE.Matrix4().set(
+  -a - c - d,         -b,  a - c - d,  a + c + d,
+          -b,  a - c - d,          b,          b,
+   a - c - d,          b,          c,          c,
+  -a - c - d,         -b,         -c,    c + 2*d);
+  result.multiplyScalar(1.0 / (c + d));  // something wrong with this matrix?
+  result.transpose();
+  return result;
+}
+
+// sage: zero
+// (0, 0, 1, 1)
+// sage: one
+// (1, 0, 0, 1)
+// sage: inf
+// (0, 0, -1, 1)
+// sage: zed
+// (a, b, c, d)
+// sage: M1         
+// [ a  b  0  0]
+// [ b -a  0  0]
+// [ 0  0 -d  c]
+// [ 0  0 -c  d]
+// sage: # multiply by t = 1 / (a^2 + b^2) to fix the determinant.
+// sage: N1
+// [-a + c - d         -b -a - c + d  a - c + d]
+// [        -b  a + c - d         -b          b]
+// [-a - c + d         -b         -c          c]
+// [-a + c - d         -b         -c   -c + 2*d]
+// sage: # multiply by t = 1 / (a^2 + b^2) to fix the determinant.
+// sage: P1
+// [-a - c - d         -b  a - c - d  a + c + d]
+// [        -b  a - c - d          b          b]
+// [ a - c - d          b          c          c]
+// [-a - c - d         -b         -c    c + 2*d]
+// sage: # multiply by tau = 1/(c + d) to fix the determinant. 
+// sage: 
+// sage: 
+// sage: 
+// sage: T
+// [  -1    0    1    1]
+// [   0    1    0    0]
+// [  -1    0 -1/2  1/2]
+// [  -1    0  1/2  3/2]
+
 
 //----------------------------------------------------------------------
 //  Deal with moving through tetrahedra
@@ -167,6 +266,7 @@ function fixOutsideTetrahedron() {
       console.log(['entering tet', g_tet_num]);
       console.log(['entry face', entry_face]);
       // console.log(['amountOutsideTetrahedron(get_pos())', amountOutsideTetrahedron(get_pos())[0]]);
+      // console.log(['vertices', vertices[4*g_tet_num], vertices[4*g_tet_num+1], vertices[4*g_tet_num+2], vertices[4*g_tet_num+3]])
 
       out = amountOutsideTetrahedron(get_pos());
       amount_outside = out[0];

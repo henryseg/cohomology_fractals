@@ -10,7 +10,7 @@ var g_rotation;
 var g_initialBoost;
 var g_initial_tet_num;
 var g_currentBoost;
-var g_tet_num = 0;
+var g_tet_num;
 var g_currentWeight = 0.0;
 var g_stereoBoosts = [];
 var g_screenResolution;
@@ -20,11 +20,11 @@ var g_controllerDualPoints = [];
 
 var g_census_data;
 var g_census_index;
-var g_maxNumTet = 11;
+var g_maxNumTet = 12;
 var g_weightsBasis;
 var g_geomNames;
 var g_numGeoms;
-var shapes;
+var vertices;
 var planes; 
 var other_tet_nums; 
 var entering_face_nums; 
@@ -100,8 +100,7 @@ var init = function(){
     g_currentBoost = new THREE.Matrix4(); // boost for camera relative to tetrahedron
     
     g_initialBoost = new THREE.Matrix4();
-    
-    g_initial_tet_num = 0;
+    // g_initial_tet_num = 0;
 
     // close to Thurston's picture of a Cannon-Thurston map for m004. Use g_current_weight = 1.0
     // g_initial_tet_num = 1;
@@ -123,8 +122,14 @@ var init = function(){
     // var temp = parabolicBy2DVector(new THREE.Vector2(0.7649484590167701,0.12594832555674987));
     // g_initialBoost.set(temp);
 
-    g_currentBoost.copy(g_initialBoost);
-    g_tet_num = g_initial_tet_num;
+    // var temp = parabolicBy2DVector(new THREE.Vector2(0.5,0.0));
+    // g_initialBoost.copy(temp);
+
+    // var temp = parabolicScale(2);
+    // var temp = parabolicRotate(Math.PI/6);
+    // g_initialBoost.copy(temp);
+
+
 
     // We need to load the shaders from file
     // since web is async we need to wait on this to finish
@@ -140,26 +145,37 @@ var loadStuff = function(){
   g_census_data = [0,0,0]; // dummy place holders, will get replaced as we load them
   g_census_index = 0;
   ////// Default cusped
-  g_triangulation = 'm004';
-  g_surfaceCoeffs = [1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];  // pad with extra zeros
+  // g_triangulation = 'm004';
+  // g_triangulation = 'm006';
+  // g_triangulation = 'cPcbbbiht_12';
+  // g_triangulation = 'dLQacccjsnk_200';
+  g_triangulation = 'dLQbccchhfo_122';
+  // g_triangulation = 'gLLAQbecdfffhhnkqnc_120012';
+  // g_triangulation = 'eLAkbbcdddhwqj_2102';
+  // g_triangulation = 'eLAkbccddhhsqs_1220';
+  // g_triangulation = 'fLLQcbecdeehhnkei_12001';
+  g_surfaceCoeffs = [1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];  // How much of each cohom class to use. Pad with extra zeros. 
 
   // asynchronously load the non-default censuses
-  var loader3 = new THREE.FileLoader();
-    loader3.load('data/cohomology_data_SV_s.json',function(data){
-    g_census_data[1] = JSON.parse(data); // we only need the non-default census data when the user changes census in the UI
-  });
-  var loader4 = new THREE.FileLoader();
-    loader4.load('data/cohomology_data_SV_v.json',function(data){
-    g_census_data[2] = JSON.parse(data); 
-  });
-  var loader5 = new THREE.FileLoader();
-    loader5.load('data/cohomology_data_SV_cool.json',function(data){
-    g_census_data[3] = JSON.parse(data); 
-  });
+  // var loader3 = new THREE.FileLoader();
+  //   loader3.load('data/cohomology_data_SV_s.json',function(data){
+  //   g_census_data[1] = JSON.parse(data); // we only need the non-default census data when the user changes census in the UI
+  // });
+  // var loader4 = new THREE.FileLoader();
+  //   loader4.load('data/cohomology_data_SV_v.json',function(data){
+  //   g_census_data[2] = JSON.parse(data); 
+  // });
+  // var loader5 = new THREE.FileLoader();
+  //   loader5.load('data/cohomology_data_SV_cool.json',function(data){
+  //   g_census_data[3] = JSON.parse(data); 
+  // });
         
   // and asynchronously load the default census
   var loader2 = new THREE.FileLoader();
-  loader2.load('data/cohomology_data_SV_m.json',function(data){
+  // loader2.load('data/cohomology_data_SV_m.json',function(data){
+  // loader2.load('data/cohomology_data_SV_cool.json',function(data){
+  // loader2.load('data/cohomology_data_SV_veering.json',function(data){  
+  loader2.load('data/cohomology_data_veering_jigsaw.json',function(data){  
     g_census_data[0] = JSON.parse(data);    
     loadShaders();  // can only set up everything else once we have the default data loaded
     setUpTriangulation(g_triangulation);
@@ -171,6 +187,7 @@ var loadStuff = function(){
 } 
 
 var setUpTriangulation = function(triangulation){
+  console.log(triangulation);
   var triang_data = g_census_data[g_census_index][triangulation];
   other_tet_nums = [];
   entering_face_nums = [];
@@ -191,7 +208,7 @@ var setUpTriangulation = function(triangulation){
   var k;
   g_numGeoms = triang_data["flat_geometries"].length;
   for(k=0;k<g_numGeoms;k++){
-    var name = triang_data["flat_geometries"][k][0];
+    var name = triang_data["flat_geometries"][k]["slope"];
     g_geomNames[name] = k;  // only used for names
   }
 }
@@ -199,15 +216,107 @@ var setUpTriangulation = function(triangulation){
 var setUpGeometry = function(triangulation, geometryIndex){
   var triang_data = g_census_data[g_census_index][triangulation];
   var geom_data = triang_data["flat_geometries"][geometryIndex];
-  shapes = geom_data[1];
+  z_positions = [];
   planes = [];
   SO31tsfms = [];
-  var data_length = triang_data["other_tet_nums"].length;
+  console.log(['z_pos', geom_data['z_positions'][1]]);
+  var data_length = geom_data['z_positions'].length;
+  var j;
+  for(j=0;j<g_maxNumTet;j++){
+    z_positions.push(array2vector4(geom_data['z_positions'][j%data_length]));  // pad out the extra space in the array 
+  }
   var i;
   for(i=0;i<4*g_maxNumTet;i++){
-    planes.push(array2vector4(geom_data[2][i%data_length]));  // pad out the extra space in the array 
-    SO31tsfms.push(array2matrix4(geom_data[3][i%data_length]));
-  }   
+    planes.push(array2vector4(geom_data['planes'][i%(4*data_length)]));  // pad out the extra space in the array 
+    SO31tsfms.push(array2matrix4(geom_data['SO13_tsfms'][i%(4*data_length)]));
+  } 
+  // now use geom_data['tet_face'], geom_data['translation'], geom_data['polar']
+  g_initial_tet_num = geom_data['tet_face'][0];
+  console.log(['tet_face', geom_data['tet_face']]);
+  var temp0;
+  switch(geom_data['tet_face'][1]){
+    case 1:
+      temp0 = swap_inf_zero(z_positions[g_initial_tet_num]);
+      break
+    case 2:
+      temp0 = swap_inf_one(z_positions[g_initial_tet_num]);
+      break
+    case 3:
+      temp0 = swap_inf_zed(z_positions[g_initial_tet_num]);
+      break
+    default:
+      temp0 = new THREE.Matrix4().identity();
+  }
+  var translation = geom_data['translation'];
+  console.log(['translate', translation]);
+  var temp1 = parabolicBy2DVector(new THREE.Vector2(translation[0], translation[1]));
+  var polar = geom_data['polar'];
+  // var temp2 = parabolicScale(2);
+  var temp2 = parabolicScale(polar[0]);
+  var temp3 = parabolicRotate(-polar[1]);
+
+  console.log(['scale', polar[0]]);
+  console.log(['rotate', polar[1]]);
+  g_initialBoost.identity();
+  g_initialBoost.premultiply(temp0); 
+  g_initialBoost.premultiply(temp1);
+  g_initialBoost.premultiply(temp2);
+  g_initialBoost.premultiply(temp3);
+
+  console.log(g_initialBoost);
+
+  // g_currentBoost.set(swap_inf_zero(vertices[4*g_initial_tet_num+3]));
+  // var temp = swap_inf_zed(vertices[4*g_initial_tet_num+3]);
+  // console.log(temp);
+  // g_initialBoost.copy(temp);
+
+  //   cPcbbbiht_12
+  // (1,2)
+  // [-1.7320508075688812, -2.9999999999999885]
+  // (4.380127018922193, 2.6179938779914953)
+  // g_initial_tet_num = 1;
+  // var temp0 = swap_inf_one(vertices[4*g_initial_tet_num+3]);
+  // var temp1 = parabolicBy2DVector(new THREE.Vector2(-1.7320508075688812, -2.9999999999999885));
+  // var temp2 = parabolicScale(4.380127018922193);
+  // var temp3 = parabolicRotate(2.6179938779914953);
+  // g_initialBoost.premultiply(temp0);
+  // g_initialBoost.premultiply(temp1);
+  // g_initialBoost.premultiply(temp2);
+  // g_initialBoost.premultiply(temp3);
+
+
+
+  // dLQacccjsnk_200 (new)
+  // (0,2)
+  // [0.46876189581400907, -0.052021362534043616]
+  // scale, rotate (4.597457513855524, -0.21461506872564518)
+
+  // g_initial_tet_num = 0;
+  // var temp0 = swap_inf_one(vertices[4*g_initial_tet_num+3]);
+  // var temp1 = parabolicBy2DVector(new THREE.Vector2(0.46876189581400907, -0.052021362534043616));
+  // var temp2 = parabolicScale(4.597457513855524);
+  // var temp3 = parabolicRotate(0.21461506872564518);  //negative of what we calculate, perhaps because we are looking down the z axis
+
+
+  // gLLAQbecdfffhhnkqnc_120012
+  // (2,2)
+  // [-0.02159655621315943, 0.7656202314854823]
+  // scale, rotate (6.045210219313558, 2.9274908006804554)
+
+  // g_initial_tet_num = 2;
+  // var temp0 = swap_inf_one(vertices[4*g_initial_tet_num+3]);
+  // var temp1 = parabolicBy2DVector(new THREE.Vector2(-0.02159655621315943, 0.7656202314854823));
+  // var temp2 = parabolicScale(6.045210219313558);
+  // var temp3 = parabolicRotate(-2.9274908006804554); 
+
+  // g_initialBoost.premultiply(temp0); 
+  // g_initialBoost.premultiply(temp1);
+  // g_initialBoost.premultiply(temp2);
+  // g_initialBoost.premultiply(temp3);
+
+  g_currentBoost.copy(g_initialBoost);
+  g_tet_num = g_initial_tet_num;
+
 }
 
 var setUpSurface = function(triangulation, surfaceCoeffs){ // surfaceCoeffs is a list of floats...
