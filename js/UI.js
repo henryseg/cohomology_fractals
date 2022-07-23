@@ -132,6 +132,7 @@ var initGui = function(){
     logMaxDist: 2.0,
     logMaxSteps: 4.6,
     contrast: -1.2,
+    brightness: 0.0,
     normalised: false,  // if true then the pictures exist in the limit, but they are all 0
     perspectiveType: 1,
     viewMode: 0,
@@ -176,6 +177,7 @@ var initGui = function(){
   var colourFolder = gui.addFolder('Colour options');
   var gradientController = colourFolder.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4, 'Greyscale': 5}).name("Colour scheme");  
   var contrastController = colourFolder.add(guiInfo, 'contrast',-5.0,5.0,0.1).name("Contrast");
+  var brightnessController = colourFolder.add(guiInfo, 'brightness',-5.0,5.0,0.1).name("Brightness");
   var normalisedController = colourFolder.add(guiInfo, 'normalised').name("Normalised");
   // view options
   var viewFolder = gui.addFolder('View options');
@@ -337,6 +339,10 @@ var initGui = function(){
 
   contrastController.onChange(function(value){
     g_material.uniforms.contrast.value = Math.exp(value);
+  });
+
+  brightnessController.onChange(function(value){
+    g_material.uniforms.brightness.value = value;
   });
 
   normalisedController.onChange(function(value){

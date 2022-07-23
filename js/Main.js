@@ -262,6 +262,7 @@ var finishInit = function(fShader){
       subpixelCount:{type:"i", value:subpixelCount},
       edgeThickness:{type:"f", value:0.0},
       contrast:{type:"f", value:Math.exp(-1.2)},
+      brightness:{type:"f", value:0.0},
       normalised:{type:"b", value:false},
       perspectiveType:{type:"i", value:1},
       viewMode:{type:"i", value: 0},

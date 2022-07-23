@@ -263,7 +263,7 @@ void main(){
 
   if(normalised){ weight /= sqrt(maxDist); }
 
-  weight = contrast * weight;
+  weight = contrast * weight + brightness;
 
 
   // linear
