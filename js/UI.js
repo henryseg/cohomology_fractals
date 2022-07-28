@@ -151,7 +151,8 @@ var initGui = function(){
     recording: false,
     fov: 90,
     zoomFactor: 1.0,
-    logClippingRadius: -2.0,
+    logNearClipRadius: -2.0,
+    logFarClipRadius: 5.0,
     liftsThickness: 0.0,
   };
 
@@ -185,7 +186,9 @@ var initGui = function(){
   var zoomController = viewFolder.add(guiInfo, 'zoomFactor',1.0,10.0,0.1).name("Zoom");
   var stepsController = viewFolder.add(guiInfo, 'logMaxSteps', 0.0,7.0,0.1).name("Log max steps");
   var distController = viewFolder.add(guiInfo, 'logMaxDist',-1.0,5.0,0.1).name("Log screen dist");
-  var clippingRadiusController = viewFolder.add(guiInfo, 'logClippingRadius',-2.0,2.0,0.01).name("Log clip radius");
+  var nearClipRadiusController = viewFolder.add(guiInfo, 'logNearClipRadius',-2.0,2.0,0.01).name("Log near clip radius");
+  var farClipRadiusController = viewFolder.add(guiInfo, 'logFarClipRadius',0.0,5.0,0.01).name("Log far clip radius");
+
     // movement controls -----------------------------------------
   var scaleController = gui.add(guiInfo, 'eToHScale',0.25,8.0).name("Move speed");
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
@@ -378,8 +381,12 @@ var initGui = function(){
     g_material.uniforms.zoomFactor.value = 1.0/value;
   });
 
-  clippingRadiusController.onChange(function(value){
-    g_material.uniforms.clippingRadius.value = Math.exp(value);
+  nearClipRadiusController.onChange(function(value){
+    g_material.uniforms.nearClipRadius.value = Math.exp(value);
+  });
+
+  farClipRadiusController.onChange(function(value){
+    g_material.uniforms.farClipRadius.value = Math.exp(value);
   });
 
   liftsController.onChange(function(value){

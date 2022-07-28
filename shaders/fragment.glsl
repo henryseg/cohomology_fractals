@@ -103,13 +103,13 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum, float
       new_pt = ray_trace_through_hyperboloid_tet(init_pt, init_dir, tetNum, entry_face, exit_face);
       dist_to_go -= hyp_dist(init_pt, new_pt);
       if (dist_to_go <= 0.0){ dist_to_go = 0.0; break; }
-      if(edgeThickness > 0.00001){
+      if(edgeThickness > 0.00001 && maxDist - dist_to_go <= farClipRadius){
         if(triangleBdryParam(new_pt, tetNum, exit_face) < edgeThickness){ break; }}
         // in fact pow(sinh(radius in hyperbolic units),2.0). However, sinh^2 is monotonic for 
         // positive values so we get correct behaviour by comparing without the sinh^2. 
       index = 4*tetNum + exit_face;
       total_face_weight += weights[ index ]; 
-      if(liftsThickness > 0.0){  // here we detect and draw elevations
+      if(liftsThickness > 0.0 && maxDist - dist_to_go <= farClipRadius){  // here we detect and draw elevations
         if( ( total_face_weight <= liftsThickness && liftsThickness < inputWeight ) || // see elevations from behind
                   ( inputWeight < 0.0001          &&         0.0001 < total_face_weight ) ||  // see elevations from in front // cannot make this too close to 0.0 or we get floating point issues from different sums of weights
             ( 0.0001 < inputWeight && inputWeight <= liftsThickness && inputWeight != total_face_weight) // see elevations from in between
@@ -234,14 +234,14 @@ float get_signed_count(vec2 xy){
   else{ init_pt = get_ray_pos_dir_hyperideal(xy, init_dir, background); }
   init_pt *= currentBoost;
   init_dir *= currentBoost; 
-  vec4 new_init_pt = pointOnGeodesic(init_pt, init_dir, clippingRadius);
-  init_dir = tangentOnGeodesic(init_pt, init_dir, clippingRadius);
+  vec4 new_init_pt = pointOnGeodesic(init_pt, init_dir, nearClipRadius);
+  init_dir = tangentOnGeodesic(init_pt, init_dir, nearClipRadius);
   init_pt = new_init_pt;
   weight = graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt. 
   // init_pt *= tsfm;  // the point gets moved back in graph_trace
   init_dir *= tsfm;  // move the direction back to here
   if (background){ return 0.0; }
-  else{ return ray_trace(init_pt, init_dir, maxDist, currentTetNum, currentWeight + weight); }
+  else{ return ray_trace(init_pt, init_dir, maxDist - nearClipRadius, currentTetNum, currentWeight + weight); }
 }
 
 void main(){

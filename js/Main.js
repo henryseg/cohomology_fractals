@@ -250,7 +250,8 @@ var finishInit = function(fShader){
       screenResolution:{type:"v2", value:g_screenResolution},
       fov:{type:"f", value:90},
       zoomFactor:{type:"f", value:1.0},
-      clippingRadius:{type:"f", value:0.0},
+      nearClipRadius:{type:"f", value:0.0},
+      farClipRadius:{type:"f", value:150.0},
       liftsThickness:{type:"f", value:0.0},
 
       currentBoost:{type:"m4", value:g_currentBoost},

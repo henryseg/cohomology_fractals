@@ -23,7 +23,8 @@ out vec4 out_FragColor;
 uniform vec2 screenResolution;
 uniform float fov;
 uniform float zoomFactor;
-uniform float clippingRadius;
+uniform float nearClipRadius;
+uniform float farClipRadius;
 uniform float liftsThickness;
 
 uniform int tetNum;
