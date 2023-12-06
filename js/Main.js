@@ -107,8 +107,8 @@ var init = function(){
     // g_initialBoost.fromArray([0.9188138624171226, -0.009030861583285602, -0.9775334314698347, 0.894355678615615, -0.6791380035356505, 0.11913787803457078, -0.7311858615978433, 0.10027475270250989, 0.05742485207891856, 0.9945158511435357, 0.11997767892793922, -0.08218293772415575, 0.555648229775409, -0.0577682319209083, -0.7103513336953101, 1.347843144121199]); 
     
     // Nice initial position for cPcbbbiht_12
-    // var temp = new THREE.Matrix4().makeRotationZ(Math.PI + Math.PI/3.0);
-    // g_initialBoost.set(temp);
+    // var temp = new THREE.Matrix4().makeRotationZ(5*Math.PI/3.0);
+    // g_initialBoost.premultiply(temp);
 
     // Closed geodesic straight ahead initial position for cPcbbbiht_12
     // var temp = new THREE.Matrix4().makeRotationX(Math.PI/2.0);

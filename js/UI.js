@@ -176,7 +176,7 @@ var initGui = function(){
   var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.4,0.01).name("Edge thickness");
   // colour options ------------------------------------------
   var colourFolder = gui.addFolder('Colour options');
-  var gradientController = colourFolder.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4, 'Greyscale': 5}).name("Colour scheme");  
+  var gradientController = colourFolder.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4, 'OKState': 5, 'Greyscale': 6}).name("Colour scheme");  
   var contrastController = colourFolder.add(guiInfo, 'contrast',-5.0,5.0,0.1).name("Contrast");
   var brightnessController = colourFolder.add(guiInfo, 'brightness',-5.0,5.0,0.1).name("Brightness");
   var normalisedController = colourFolder.add(guiInfo, 'normalised').name("Normalised");
@@ -194,7 +194,7 @@ var initGui = function(){
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
   // screenshots -----------------------------------------------
   var screenshotFolder = gui.addFolder('Screenshot');
-  var screenshotSizeController = screenshotFolder.add(guiInfo, 'screenshotSize', {'1000x1000': 0, '1920x1080': 1, '4096x4096': 2}).name("Screenshot size");
+  var screenshotSizeController = screenshotFolder.add(guiInfo, 'screenshotSize', {'1000x1000': 0, '1920x1080': 1, '4096x4096': 2, '8192x8192': 3}).name("Screenshot size");
   // var widthController = screenshotFolder.add(guiInfo, 'screenshotWidth');
   // var heightController = screenshotFolder.add(guiInfo, 'screenshotHeight');
   screenshotFolder.add(guiInfo, 'TakeSS').name("Take screenshot");
@@ -219,6 +219,10 @@ var initGui = function(){
     else if(value == 2){
       g_screenShotResolution.x = 4096;
       g_screenShotResolution.y = 4096;
+    }
+    else if(value == 3){
+      g_screenShotResolution.x = 8192;
+      g_screenShotResolution.y = 8192;
     }
   });
 
@@ -320,7 +324,16 @@ var initGui = function(){
                                                    new THREE.Vector3(81/255, 28/255, 108/255),  // warwick aubergine
                                                    new THREE.Vector3(0.0, 0.0, 0.0)];
     }
-    else if(value == 5){ // Greyscale
+    else if(value == 5){ // OKState
+      g_material.uniforms.gradientThreshholds.value = [0.0, 0.45, 0.55, 0.75, 1.000001];
+      g_material.uniforms.gradientColours.value = [new THREE.Vector3(1.0, 1.0, 1.0), 
+                                                   // new THREE.Vector3(208/255, 208/255, 206/255), // light grey
+                                                    new THREE.Vector3(255/255, 102/255, 0/255),  //
+                                                   new THREE.Vector3(255/255, 102/255, 0/255),  //
+                                                   new THREE.Vector3(99/255, 102/255, 106/255),  // 
+                                                   new THREE.Vector3(0.0, 0.0, 0.0)];
+    }
+    else if(value == 6){ // Greyscale
       g_material.uniforms.gradientThreshholds.value = [0.0, 1.000001, 1.000001, 1.000001, 1.000001];
       g_material.uniforms.gradientColours.value = [new THREE.Vector3(1.0, 1.0, 1.0), 
                                                    new THREE.Vector3(0.0, 0.0, 0.0),
