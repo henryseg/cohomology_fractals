@@ -176,7 +176,7 @@ var initGui = function(){
   var edgeThicknessController = gui.add(guiInfo, 'edgeThickness',0.0,0.4,0.01).name("Edge thickness");
   // colour options ------------------------------------------
   var colourFolder = gui.addFolder('Colour options');
-  var gradientController = colourFolder.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4, 'OKState': 5, 'Greyscale': 6}).name("Colour scheme");  
+  var gradientController = colourFolder.add(guiInfo, 'gradientIndex', {'Cool': 0, 'Warm': 1, 'Neon': 2, 'Green': 3, 'Warwick': 4, 'OKState': 5, 'Sydney': 6, 'Greyscale': 7}).name("Colour scheme");  
   var contrastController = colourFolder.add(guiInfo, 'contrast',-5.0,5.0,0.1).name("Contrast");
   var brightnessController = colourFolder.add(guiInfo, 'brightness',-5.0,5.0,0.1).name("Brightness");
   var normalisedController = colourFolder.add(guiInfo, 'normalised').name("Normalised");
@@ -194,7 +194,7 @@ var initGui = function(){
   gui.add(guiInfo, 'resetPosition').name("Reset Position");
   // screenshots -----------------------------------------------
   var screenshotFolder = gui.addFolder('Screenshot');
-  var screenshotSizeController = screenshotFolder.add(guiInfo, 'screenshotSize', {'1000x1000': 0, '1920x1080': 1, '4096x4096': 2, '8192x8192': 3}).name("Screenshot size");
+  var screenshotSizeController = screenshotFolder.add(guiInfo, 'screenshotSize', {'1000x1000': 0, '1920x1080': 1, '3840x2160': 2, '4096x4096': 3, '8192x8192': 4, '2790x1860': 5}).name("Screenshot size");
   // var widthController = screenshotFolder.add(guiInfo, 'screenshotWidth');
   // var heightController = screenshotFolder.add(guiInfo, 'screenshotHeight');
   screenshotFolder.add(guiInfo, 'TakeSS').name("Take screenshot");
@@ -217,12 +217,20 @@ var initGui = function(){
       g_screenShotResolution.y = 1080;
     }
     else if(value == 2){
+      g_screenShotResolution.x = 3840;
+      g_screenShotResolution.y = 2160;
+    }
+    else if(value == 3){
       g_screenShotResolution.x = 4096;
       g_screenShotResolution.y = 4096;
     }
-    else if(value == 3){
+    else if(value == 4){
       g_screenShotResolution.x = 8192;
       g_screenShotResolution.y = 8192;
+    }
+    else if(value == 5){
+      g_screenShotResolution.x = 2790;
+      g_screenShotResolution.y = 1860;
     }
   });
 
@@ -333,7 +341,15 @@ var initGui = function(){
                                                    new THREE.Vector3(99/255, 102/255, 106/255),  // 
                                                    new THREE.Vector3(0.0, 0.0, 0.0)];
     }
-    else if(value == 6){ // Greyscale
+    else if(value == 6){ // Sydney
+      g_material.uniforms.gradientThreshholds.value = [0.0, 0.15, 0.5, 0.85, 1.000001];
+      g_material.uniforms.gradientColours.value = [new THREE.Vector3(1.0, 1.0, 1.0), 
+                                                    new THREE.Vector3(252/255, 237/255, 226/255),  //
+                                                   new THREE.Vector3(230/255, 70/255, 38/255),  //
+                                                   new THREE.Vector3(66/255, 66/255, 66/255),  // 
+                                                   new THREE.Vector3(0.0, 0.0, 0.0)];
+    }
+    else if(value == 7){ // Greyscale
       g_material.uniforms.gradientThreshholds.value = [0.0, 1.000001, 1.000001, 1.000001, 1.000001];
       g_material.uniforms.gradientColours.value = [new THREE.Vector3(1.0, 1.0, 1.0), 
                                                    new THREE.Vector3(0.0, 0.0, 0.0),
